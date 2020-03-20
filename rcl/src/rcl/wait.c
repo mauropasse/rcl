@@ -516,7 +516,12 @@ rcl_wait_set_add_event(
 }
 
 rcl_ret_t
-rcl_wait(rcl_wait_set_t * wait_set, int64_t timeout)
+rcl_wait(rcl_wait_set_t * wait_set, int64_t timeout,
+  size_t * ready_subscriber,
+  size_t * ready_timer,
+  size_t * ready_service,
+  size_t * ready_client,
+  size_t * ready_items)
 {
   RCL_CHECK_ARGUMENT_FOR_NULL(wait_set, RCL_RET_INVALID_ARGUMENT);
   if (!rcl_wait_set_is_valid(wait_set)) {
@@ -630,6 +635,9 @@ rcl_wait(rcl_wait_set_t * wait_set, int64_t timeout)
     RCUTILS_LOG_DEBUG_EXPRESSION_NAMED(is_ready, ROS_PACKAGE_NAME, "Timer in wait set is ready");
     if (!is_ready) {
       wait_set->timers[i] = NULL;
+    }else{
+      ready_timer[ready_items[TIMER]]=i;
+      ready_items[TIMER]++;
     }
   }
   // Check for timeout, return RCL_RET_TIMEOUT only if it wasn't a timer.
@@ -644,6 +652,9 @@ rcl_wait(rcl_wait_set_t * wait_set, int64_t timeout)
       is_ready, ROS_PACKAGE_NAME, "Subscription in wait set is ready");
     if (!is_ready) {
       wait_set->subscriptions[i] = NULL;
+    }else{
+      ready_subscriber[ready_items[SUBSCRIBER]]=i;
+      ready_items[SUBSCRIBER]++;
     }
   }
   // Set corresponding rcl guard_condition handles NULL.
@@ -661,6 +672,9 @@ rcl_wait(rcl_wait_set_t * wait_set, int64_t timeout)
     RCUTILS_LOG_DEBUG_EXPRESSION_NAMED(is_ready, ROS_PACKAGE_NAME, "Client in wait set is ready");
     if (!is_ready) {
       wait_set->clients[i] = NULL;
+    }else{
+      ready_client[ready_items[CLIENT]]=i;
+      ready_items[CLIENT]++;
     }
   }
   // Set corresponding rcl service handles NULL.
@@ -669,6 +683,9 @@ rcl_wait(rcl_wait_set_t * wait_set, int64_t timeout)
     RCUTILS_LOG_DEBUG_EXPRESSION_NAMED(is_ready, ROS_PACKAGE_NAME, "Service in wait set is ready");
     if (!is_ready) {
       wait_set->services[i] = NULL;
+    }else{
+      ready_service[ready_items[SERVICE]]=i;
+      ready_items[SERVICE]++;
     }
   }
   // Set corresponding rcl event handles NULL.
