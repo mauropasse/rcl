@@ -457,7 +457,20 @@ rcl_wait_set_add_event(
 RCL_PUBLIC
 RCL_WARN_UNUSED
 rcl_ret_t
-rcl_wait(rcl_wait_set_t * wait_set, int64_t timeout);
+rcl_wait(rcl_wait_set_t * wait_set, int64_t timeout,
+  size_t * ready_subscriber,
+  size_t * ready_timer,
+  size_t * ready_service,
+  size_t * ready_client,
+  size_t * ready_items);
+
+enum ENTITY
+{
+  SUBSCRIBER = 0,
+  TIMER,
+  SERVICE,
+  CLIENT
+};
 
 /// Return `true` if the wait set is valid, else `false`.
 /**
