@@ -633,9 +633,7 @@ rcl_wait(rcl_wait_set_t * wait_set, int64_t timeout,
       return ret;  // The rcl error state should already be set.
     }
     RCUTILS_LOG_DEBUG_EXPRESSION_NAMED(is_ready, ROS_PACKAGE_NAME, "Timer in wait set is ready");
-    if (!is_ready) {
-      wait_set->timers[i] = NULL;
-    }else{
+    if (is_ready) {
       ready_timer[ready_items[TIMER]]=i;
       ready_items[TIMER]++;
     }
@@ -650,9 +648,7 @@ rcl_wait(rcl_wait_set_t * wait_set, int64_t timeout,
     bool is_ready = wait_set->impl->rmw_subscriptions.subscribers[i] != NULL;
     RCUTILS_LOG_DEBUG_EXPRESSION_NAMED(
       is_ready, ROS_PACKAGE_NAME, "Subscription in wait set is ready");
-    if (!is_ready) {
-      wait_set->subscriptions[i] = NULL;
-    }else{
+    if (is_ready) {
       ready_subscriber[ready_items[SUBSCRIBER]]=i;
       ready_items[SUBSCRIBER]++;
     }
@@ -670,9 +666,7 @@ rcl_wait(rcl_wait_set_t * wait_set, int64_t timeout,
   for (i = 0; i < wait_set->size_of_clients; ++i) {
     bool is_ready = wait_set->impl->rmw_clients.clients[i] != NULL;
     RCUTILS_LOG_DEBUG_EXPRESSION_NAMED(is_ready, ROS_PACKAGE_NAME, "Client in wait set is ready");
-    if (!is_ready) {
-      wait_set->clients[i] = NULL;
-    }else{
+    if (is_ready) {
       ready_client[ready_items[CLIENT]]=i;
       ready_items[CLIENT]++;
     }
@@ -681,9 +675,7 @@ rcl_wait(rcl_wait_set_t * wait_set, int64_t timeout,
   for (i = 0; i < wait_set->size_of_services; ++i) {
     bool is_ready = wait_set->impl->rmw_services.services[i] != NULL;
     RCUTILS_LOG_DEBUG_EXPRESSION_NAMED(is_ready, ROS_PACKAGE_NAME, "Service in wait set is ready");
-    if (!is_ready) {
-      wait_set->services[i] = NULL;
-    }else{
+    if (is_ready) {
       ready_service[ready_items[SERVICE]]=i;
       ready_items[SERVICE]++;
     }
