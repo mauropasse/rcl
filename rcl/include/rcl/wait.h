@@ -220,6 +220,13 @@ rcl_wait_set_add_subscription(
   const rcl_subscription_t * subscription,
   size_t * index);
 
+RCL_PUBLIC
+RCL_WARN_UNUSED
+rcl_ret_t
+rcl_rmw_wait_set_add_subscription(
+  rcl_wait_set_t * wait_set,
+  const rcl_subscription_t * subscription);
+
 /// Remove (sets to `NULL`) all entities in the wait set.
 /**
  * This function should be used after passing using rcl_wait, but before
@@ -247,6 +254,11 @@ RCL_PUBLIC
 RCL_WARN_UNUSED
 rcl_ret_t
 rcl_wait_set_clear(rcl_wait_set_t * wait_set);
+
+RCL_PUBLIC
+RCL_WARN_UNUSED
+rcl_ret_t
+rcl_rmw_wait_set_clear(rcl_wait_set_t * wait_set);
 
 /// Reallocate space for entities in the wait set.
 /**
@@ -310,6 +322,13 @@ rcl_wait_set_add_guard_condition(
   const rcl_guard_condition_t * guard_condition,
   size_t * index);
 
+RCL_PUBLIC
+RCL_WARN_UNUSED
+rcl_ret_t
+rcl_rmw_wait_set_add_guard_condition(
+  rcl_wait_set_t * wait_set,
+  const rcl_guard_condition_t * guard_condition);
+
 /// Store a pointer to the timer in the next empty spot in the set.
 /**
  * This function behaves exactly the same as for subscriptions.
@@ -336,6 +355,12 @@ rcl_wait_set_add_client(
   const rcl_client_t * client,
   size_t * index);
 
+RCL_PUBLIC
+RCL_WARN_UNUSED
+rcl_ret_t
+rcl_rmw_wait_set_add_client(
+  rcl_wait_set_t * wait_set,
+  const rcl_client_t * client);
 /// Store a pointer to the service in the next empty spot in the set.
 /**
  * This function behaves exactly the same as for subscriptions.
@@ -349,6 +374,13 @@ rcl_wait_set_add_service(
   const rcl_service_t * service,
   size_t * index);
 
+RCL_PUBLIC
+RCL_WARN_UNUSED
+rcl_ret_t
+rcl_rmw_wait_set_add_service(
+  rcl_wait_set_t * wait_set,
+  const rcl_service_t * service);
+
 /// Store a pointer to the event in the next empty spot in the set.
 /**
  * This function behaves exactly the same as for subscriptions.
@@ -361,6 +393,13 @@ rcl_wait_set_add_event(
   rcl_wait_set_t * wait_set,
   const rcl_event_t * event,
   size_t * index);
+
+RCL_PUBLIC
+RCL_WARN_UNUSED
+rcl_ret_t
+rcl_rmw_wait_set_add_event(
+  rcl_wait_set_t * wait_set,
+  const rcl_event_t * event);
 
 /// Block until the wait set is ready or until the timeout has been exceeded.
 /**
