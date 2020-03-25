@@ -236,8 +236,8 @@ rcl_wait_set_get_allocator(const rcl_wait_set_t * wait_set, rcl_allocator_t * al
   rmw_ ## Type ## _t * rmw_handle = rcl_ ## Type ## _get_rmw_handle(Type); \
   RCL_CHECK_FOR_NULL_WITH_MSG( \
     rmw_handle, rcl_get_error_string().str, return RCL_RET_ERROR); \
+  size_t current_index = wait_set->impl->RMWCount++; \
   wait_set->impl->RMWStorage[current_index] = rmw_handle->data; \
-  wait_set->impl->RMWCount++;
 
 #define SET_CLEAR(Type) \
   do { \
@@ -318,6 +318,14 @@ rcl_wait_set_add_subscription(
   size_t * index)
 {
   SET_ADD(subscription)
+  return RCL_RET_OK;
+}
+
+rcl_ret_t
+rcl_rmw_wait_set_add_subscription(
+  rcl_wait_set_t * wait_set,
+  const rcl_subscription_t * subscription)
+{
   SET_ADD_RMW(subscription, rmw_subscriptions.subscribers, rmw_subscriptions.subscriber_count)
   return RCL_RET_OK;
 }
@@ -339,6 +347,15 @@ rcl_wait_set_clear(rcl_wait_set_t * wait_set)
   SET_CLEAR(service);
   SET_CLEAR(event);
   SET_CLEAR(timer);
+
+  return RCL_RET_OK;
+}
+
+rcl_ret_t
+rcl_rmw_wait_set_clear(rcl_wait_set_t * wait_set)
+{
+  RCL_CHECK_ARGUMENT_FOR_NULL(wait_set, RCL_RET_INVALID_ARGUMENT);
+  RCL_CHECK_ARGUMENT_FOR_NULL(wait_set->impl, RCL_RET_WAIT_SET_INVALID);
 
   SET_CLEAR_RMW(
     subscription,
@@ -454,6 +471,15 @@ rcl_wait_set_add_guard_condition(
   size_t * index)
 {
   SET_ADD(guard_condition)
+
+  return RCL_RET_OK;
+}
+
+rcl_ret_t
+rcl_rmw_wait_set_add_guard_condition(
+  rcl_wait_set_t * wait_set,
+  const rcl_guard_condition_t * guard_condition)
+{
   SET_ADD_RMW(
     guard_condition, rmw_guard_conditions.guard_conditions,
     rmw_guard_conditions.guard_condition_count)
@@ -488,6 +514,14 @@ rcl_wait_set_add_client(
   size_t * index)
 {
   SET_ADD(client)
+  return RCL_RET_OK;
+}
+
+rcl_ret_t
+rcl_rmw_wait_set_add_client(
+  rcl_wait_set_t * wait_set,
+  const rcl_client_t * client)
+{
   SET_ADD_RMW(client, rmw_clients.clients, rmw_clients.client_count)
   return RCL_RET_OK;
 }
@@ -499,6 +533,14 @@ rcl_wait_set_add_service(
   size_t * index)
 {
   SET_ADD(service)
+  return RCL_RET_OK;
+}
+
+rcl_ret_t
+rcl_rmw_wait_set_add_service(
+  rcl_wait_set_t * wait_set,
+  const rcl_service_t * service)
+{
   SET_ADD_RMW(service, rmw_services.services, rmw_services.service_count)
   return RCL_RET_OK;
 }
@@ -510,10 +552,19 @@ rcl_wait_set_add_event(
   size_t * index)
 {
   SET_ADD(event)
+  return RCL_RET_OK;
+}
+
+rcl_ret_t
+rcl_rmw_wait_set_add_event(
+  rcl_wait_set_t * wait_set,
+  const rcl_event_t * event)
+{
   SET_ADD_RMW(event, rmw_events.events, rmw_events.event_count)
   wait_set->impl->rmw_events.events[current_index] = rmw_handle;
   return RCL_RET_OK;
 }
+
 
 rcl_ret_t
 rcl_wait(rcl_wait_set_t * wait_set, int64_t timeout,
