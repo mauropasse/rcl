@@ -977,21 +977,24 @@ rcl_action_wait_set_add_action_server(
   rcl_ret_t ret = rcl_wait_set_add_service(
     wait_set,
     &action_server->impl->goal_service,
-    &action_server->impl->wait_set_goal_service_index);
+    &action_server->impl->wait_set_goal_service_index,
+    true);
   if (RCL_RET_OK != ret) {
     return ret;
   }
   ret = rcl_wait_set_add_service(
     wait_set,
     &action_server->impl->cancel_service,
-    &action_server->impl->wait_set_cancel_service_index);
+    &action_server->impl->wait_set_cancel_service_index,
+    true);
   if (RCL_RET_OK != ret) {
     return ret;
   }
   ret = rcl_wait_set_add_service(
     wait_set,
     &action_server->impl->result_service,
-    &action_server->impl->wait_set_result_service_index);
+    &action_server->impl->wait_set_result_service_index,
+    true);
   if (RCL_RET_OK != ret) {
     return ret;
   }

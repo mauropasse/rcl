@@ -218,14 +218,8 @@ rcl_ret_t
 rcl_wait_set_add_subscription(
   rcl_wait_set_t * wait_set,
   const rcl_subscription_t * subscription,
-  size_t * index);
-
-RCL_PUBLIC
-RCL_WARN_UNUSED
-rcl_ret_t
-rcl_rmw_wait_set_add_subscription(
-  rcl_wait_set_t * wait_set,
-  const rcl_subscription_t * subscription);
+  size_t * index,
+  bool add_to_rcl_wait_set);
 
 /// Remove (sets to `NULL`) all entities in the wait set.
 /**
@@ -253,12 +247,7 @@ rcl_rmw_wait_set_add_subscription(
 RCL_PUBLIC
 RCL_WARN_UNUSED
 rcl_ret_t
-rcl_wait_set_clear(rcl_wait_set_t * wait_set);
-
-RCL_PUBLIC
-RCL_WARN_UNUSED
-rcl_ret_t
-rcl_rmw_wait_set_clear(rcl_wait_set_t * wait_set);
+rcl_wait_set_clear(rcl_wait_set_t * wait_set, bool clear_rcl_wait_set);
 
 /// Reallocate space for entities in the wait set.
 /**
@@ -320,14 +309,8 @@ rcl_ret_t
 rcl_wait_set_add_guard_condition(
   rcl_wait_set_t * wait_set,
   const rcl_guard_condition_t * guard_condition,
-  size_t * index);
-
-RCL_PUBLIC
-RCL_WARN_UNUSED
-rcl_ret_t
-rcl_rmw_wait_set_add_guard_condition(
-  rcl_wait_set_t * wait_set,
-  const rcl_guard_condition_t * guard_condition);
+  size_t * index,
+  bool add_to_rcl_wait_set);
 
 /// Store a pointer to the timer in the next empty spot in the set.
 /**
@@ -353,14 +336,9 @@ rcl_ret_t
 rcl_wait_set_add_client(
   rcl_wait_set_t * wait_set,
   const rcl_client_t * client,
-  size_t * index);
+  size_t * index,
+  bool add_to_rcl_wait_set);
 
-RCL_PUBLIC
-RCL_WARN_UNUSED
-rcl_ret_t
-rcl_rmw_wait_set_add_client(
-  rcl_wait_set_t * wait_set,
-  const rcl_client_t * client);
 /// Store a pointer to the service in the next empty spot in the set.
 /**
  * This function behaves exactly the same as for subscriptions.
@@ -372,14 +350,8 @@ rcl_ret_t
 rcl_wait_set_add_service(
   rcl_wait_set_t * wait_set,
   const rcl_service_t * service,
-  size_t * index);
-
-RCL_PUBLIC
-RCL_WARN_UNUSED
-rcl_ret_t
-rcl_rmw_wait_set_add_service(
-  rcl_wait_set_t * wait_set,
-  const rcl_service_t * service);
+  size_t * index,
+  bool add_to_rcl_wait_set);
 
 /// Store a pointer to the event in the next empty spot in the set.
 /**
@@ -392,14 +364,8 @@ rcl_ret_t
 rcl_wait_set_add_event(
   rcl_wait_set_t * wait_set,
   const rcl_event_t * event,
-  size_t * index);
-
-RCL_PUBLIC
-RCL_WARN_UNUSED
-rcl_ret_t
-rcl_rmw_wait_set_add_event(
-  rcl_wait_set_t * wait_set,
-  const rcl_event_t * event);
+  size_t * index,
+  bool add_to_rcl_wait_set);
 
 /// Block until the wait set is ready or until the timeout has been exceeded.
 /**
