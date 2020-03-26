@@ -537,6 +537,8 @@ rcl_wait(rcl_wait_set_t * wait_set, int64_t timeout,
   size_t * ready_timer,
   size_t * ready_service,
   size_t * ready_client,
+  size_t * ready_event,
+  size_t * ready_gc,
   size_t * ready_items)
 {
   RCL_CHECK_ARGUMENT_FOR_NULL(wait_set, RCL_RET_INVALID_ARGUMENT);
@@ -674,8 +676,9 @@ rcl_wait(rcl_wait_set_t * wait_set, int64_t timeout,
     bool is_ready = wait_set->impl->rmw_guard_conditions.guard_conditions[i] != NULL;
     RCUTILS_LOG_DEBUG_EXPRESSION_NAMED(
       is_ready, ROS_PACKAGE_NAME, "Guard condition in wait set is ready");
-    if (!is_ready) {
-      wait_set->guard_conditions[i] = NULL;
+    if (is_ready) {
+      ready_gc[ready_items[GC]]=i;
+      ready_items[GC]++;
     }
   }
   // Set corresponding rcl client handles NULL.
@@ -700,8 +703,9 @@ rcl_wait(rcl_wait_set_t * wait_set, int64_t timeout,
   for (i = 0; i < wait_set->size_of_events; ++i) {
     bool is_ready = wait_set->impl->rmw_events.events[i] != NULL;
     RCUTILS_LOG_DEBUG_EXPRESSION_NAMED(is_ready, ROS_PACKAGE_NAME, "Event in wait set is ready");
-    if (!is_ready) {
-      wait_set->events[i] = NULL;
+    if (is_ready) {
+      ready_event[ready_items[EVENT]]=i;
+      ready_items[EVENT]++;
     }
   }
 
