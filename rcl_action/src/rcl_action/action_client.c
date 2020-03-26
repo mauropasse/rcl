@@ -495,7 +495,8 @@ rcl_action_wait_set_add_action_client(
   ret = rcl_wait_set_add_client(
     wait_set,
     &action_client->impl->goal_client,
-    &action_client->impl->wait_set_goal_client_index);
+    &action_client->impl->wait_set_goal_client_index,
+    true);
   if (RCL_RET_OK != ret) {
     return ret;
   }
@@ -503,7 +504,8 @@ rcl_action_wait_set_add_action_client(
   ret = rcl_wait_set_add_client(
     wait_set,
     &action_client->impl->cancel_client,
-    &action_client->impl->wait_set_cancel_client_index);
+    &action_client->impl->wait_set_cancel_client_index,
+    true);
   if (RCL_RET_OK != ret) {
     return ret;
   }
@@ -511,7 +513,8 @@ rcl_action_wait_set_add_action_client(
   ret = rcl_wait_set_add_client(
     wait_set,
     &action_client->impl->result_client,
-    &action_client->impl->wait_set_result_client_index);
+    &action_client->impl->wait_set_result_client_index,
+    true);
   if (RCL_RET_OK != ret) {
     return ret;
   }
@@ -519,7 +522,8 @@ rcl_action_wait_set_add_action_client(
   ret = rcl_wait_set_add_subscription(
     wait_set,
     &action_client->impl->feedback_subscription,
-    &action_client->impl->wait_set_feedback_subscription_index);
+    &action_client->impl->wait_set_feedback_subscription_index,
+    true);
   if (RCL_RET_OK != ret) {
     return ret;
   }
@@ -527,7 +531,8 @@ rcl_action_wait_set_add_action_client(
   ret = rcl_wait_set_add_subscription(
     wait_set,
     &action_client->impl->status_subscription,
-    &action_client->impl->wait_set_status_subscription_index);
+    &action_client->impl->wait_set_status_subscription_index,
+    true);
   if (RCL_RET_OK != ret) {
     return ret;
   }
