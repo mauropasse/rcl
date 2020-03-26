@@ -467,6 +467,8 @@ rcl_wait(rcl_wait_set_t * wait_set, int64_t timeout,
   size_t * ready_timer,
   size_t * ready_service,
   size_t * ready_client,
+  size_t * ready_event,
+  size_t * ready_gc,
   size_t * ready_items);
 
 enum ENTITY
@@ -474,7 +476,9 @@ enum ENTITY
   SUBSCRIBER = 0,
   TIMER,
   SERVICE,
-  CLIENT
+  CLIENT,
+  EVENT,
+  GC
 };
 
 /// Return `true` if the wait set is valid, else `false`.
