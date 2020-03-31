@@ -318,7 +318,7 @@ rcl_wait_set_add_subscription(
   size_t * index, bool add_to_rcl_wait_set)
 {
   if(add_to_rcl_wait_set == true) {
-    //SET_ADD(subscription)
+    SET_ADD(subscription)
   }
   SET_ADD_RMW(subscription, rmw_subscriptions.subscribers, rmw_subscriptions.subscriber_count)
 
@@ -337,10 +337,10 @@ rcl_wait_set_clear(rcl_wait_set_t * wait_set, bool clear_rcl_wait_set)
   RCL_CHECK_ARGUMENT_FOR_NULL(wait_set->impl, RCL_RET_WAIT_SET_INVALID);
 
   if(clear_rcl_wait_set == true) {
-    //SET_CLEAR(subscription);
+    SET_CLEAR(subscription);
     SET_CLEAR(guard_condition);
-    //SET_CLEAR(client);
-    //SET_CLEAR(service);
+    SET_CLEAR(client);
+    SET_CLEAR(service);
     SET_CLEAR(event);
     SET_CLEAR(timer);
   }
@@ -495,7 +495,7 @@ rcl_wait_set_add_client(
   size_t * index, bool add_to_rcl_wait_set)
 {
   if(add_to_rcl_wait_set == true) {
-    //SET_ADD(client)
+    SET_ADD(client)
   }
   SET_ADD_RMW(client, rmw_clients.clients, rmw_clients.client_count)
 
@@ -509,7 +509,7 @@ rcl_wait_set_add_service(
   size_t * index, bool add_to_rcl_wait_set)
 {
   if(add_to_rcl_wait_set == true) {
-    //SET_ADD(service)
+    SET_ADD(service)
   }
   SET_ADD_RMW(service, rmw_services.services, rmw_services.service_count)
 
