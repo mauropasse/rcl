@@ -226,8 +226,6 @@ rcl_wait_set_get_allocator(const rcl_wait_set_t * wait_set, rcl_allocator_t * al
   } \
   size_t current_index = wait_set->impl->Type ## _index++; \
   wait_set->Type ## s[current_index] = Type; \
-  printf("SET_ADD " #Type); \
-  printf(" * = %p\n", (void*)wait_set->Type ## s[current_index]); \
   /* Set optional output argument */ \
   if (NULL != index) { \
     *index = current_index; \
@@ -236,8 +234,6 @@ rcl_wait_set_get_allocator(const rcl_wait_set_t * wait_set, rcl_allocator_t * al
 #define SET_ADD_RMW(Type, RMWStorage, RMWCount) \
   /* Also place into rmw storage. */ \
   rmw_ ## Type ## _t * rmw_handle = rcl_ ## Type ## _get_rmw_handle(Type); \
-  printf("SET_ADD_RMW " #Type); \
-  printf(" * = %p\n", (void*)rmw_handle->data); \
   RCL_CHECK_FOR_NULL_WITH_MSG( \
     rmw_handle, rcl_get_error_string().str, return RCL_RET_ERROR); \
   wait_set->impl->RMWStorage[current_index] = rmw_handle->data; \
@@ -321,7 +317,6 @@ rcl_wait_set_add_subscription(
   const rcl_subscription_t * subscription,
   size_t * index)
 {
-  printf("wait.c: rcl_wait_set_add_subscription: %p \n",(void*)subscription);
   SET_ADD(subscription)
   SET_ADD_RMW(subscription, rmw_subscriptions.subscribers, rmw_subscriptions.subscriber_count)
   return RCL_RET_OK;
@@ -458,7 +453,6 @@ rcl_wait_set_add_guard_condition(
   const rcl_guard_condition_t * guard_condition,
   size_t * index)
 {
-  printf("wait.c: rcl_wait_set_add_guard_condition: %p \n",(void*)guard_condition);
   SET_ADD(guard_condition)
   SET_ADD_RMW(
     guard_condition, rmw_guard_conditions.guard_conditions,
