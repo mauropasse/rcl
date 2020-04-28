@@ -469,15 +469,15 @@ rcl_wait_set_add_timer(
 {
   SET_ADD(timer)
   // Add timer guard conditions to end of rmw guard condtion set.
-  rcl_guard_condition_t * guard_condition = rcl_timer_get_guard_condition(timer);
-  if (NULL != guard_condition) {
-    // rcl_wait() will take care of moving these backwards and setting guard_condition_count.
-    const size_t index = wait_set->size_of_guard_conditions + (wait_set->impl->timer_index - 1);
-    rmw_guard_condition_t * rmw_handle = rcl_guard_condition_get_rmw_handle(guard_condition);
-    RCL_CHECK_FOR_NULL_WITH_MSG(
-      rmw_handle, rcl_get_error_string().str, return RCL_RET_ERROR);
-    wait_set->impl->rmw_guard_conditions.guard_conditions[index] = rmw_handle->data;
-  }
+  // rcl_guard_condition_t * guard_condition = rcl_timer_get_guard_condition(timer);
+  // if (NULL != guard_condition) {
+  //   // rcl_wait() will take care of moving these backwards and setting guard_condition_count.
+  //   const size_t index = wait_set->size_of_guard_conditions + (wait_set->impl->timer_index - 1);
+  //   rmw_guard_condition_t * rmw_handle = rcl_guard_condition_get_rmw_handle(guard_condition);
+  //   RCL_CHECK_FOR_NULL_WITH_MSG(
+  //     rmw_handle, rcl_get_error_string().str, return RCL_RET_ERROR);
+  //   wait_set->impl->rmw_guard_conditions.guard_conditions[index] = rmw_handle->data;
+  // }
   return RCL_RET_OK;
 }
 
@@ -537,70 +537,6 @@ rcl_wait(rcl_wait_set_t * wait_set, int64_t timeout)
   // Calculate the timeout argument.
   // By default, set the timer to block indefinitely if none of the below conditions are met.
   rmw_time_t * timeout_argument = NULL;
-  rmw_time_t temporary_timeout_storage;
-
-  bool is_timer_timeout = false;
-  int64_t min_timeout = timeout > 0 ? timeout : INT64_MAX;
-  {  // scope to prevent i from colliding below
-    uint64_t i = 0;
-    for (i = 0; i < wait_set->impl->timer_index; ++i) {
-      if (!wait_set->timers[i]) {
-        continue;  // Skip NULL timers.
-      }
-      rmw_guard_conditions_t * rmw_gcs = &(wait_set->impl->rmw_guard_conditions);
-      size_t gc_idx = wait_set->size_of_guard_conditions + i;
-      if (NULL != rmw_gcs->guard_conditions[gc_idx]) {
-        // This timer has a guard condition, so move it to make a legal wait set.
-        rmw_gcs->guard_conditions[rmw_gcs->guard_condition_count] =
-          rmw_gcs->guard_conditions[gc_idx];
-        ++(rmw_gcs->guard_condition_count);
-      }
-      bool is_canceled = false;
-      rcl_ret_t ret = rcl_timer_is_canceled(wait_set->timers[i], &is_canceled);
-      if (ret != RCL_RET_OK) {
-        return ret;  // The rcl error state should already be set.
-      }
-      if (is_canceled) {
-        // wait_set->timers[i] = NULL;
-        continue;
-      }
-      // use timer time to to set the rmw_wait timeout
-      // TODO(sloretz) fix spurious wake-ups on ROS_TIME timers with ROS_TIME enabled
-      int64_t timer_timeout = INT64_MAX;
-      ret = rcl_timer_get_time_until_next_call(wait_set->timers[i], &timer_timeout);
-      if (ret != RCL_RET_OK) {
-        return ret;  // The rcl error state should already be set.
-      }
-      if (timer_timeout < min_timeout) {
-        is_timer_timeout = true;
-        min_timeout = timer_timeout;
-      }
-    }
-  }
-
-  if (timeout == 0) {
-    // Then it is non-blocking, so set the temporary storage to 0, 0 and pass it.
-    temporary_timeout_storage.sec = 0;
-    temporary_timeout_storage.nsec = 0;
-    timeout_argument = &temporary_timeout_storage;
-  } else if (timeout > 0 || is_timer_timeout) {
-    // If min_timeout was negative, we need to wake up immediately.
-    if (min_timeout < 0) {
-      min_timeout = 0;
-    }
-    temporary_timeout_storage.sec = RCL_NS_TO_S(min_timeout);
-    temporary_timeout_storage.nsec = min_timeout % 1000000000;
-    timeout_argument = &temporary_timeout_storage;
-  }
-  RCUTILS_LOG_DEBUG_EXPRESSION_NAMED(
-    !timeout_argument, ROS_PACKAGE_NAME, "Waiting without timeout");
-  RCUTILS_LOG_DEBUG_EXPRESSION_NAMED(
-    timeout_argument, ROS_PACKAGE_NAME,
-    "Waiting with timeout: %" PRIu64 "s + %" PRIu64 "ns",
-    temporary_timeout_storage.sec, temporary_timeout_storage.nsec);
-  RCUTILS_LOG_DEBUG_NAMED(
-    ROS_PACKAGE_NAME, "Timeout calculated based on next scheduled timer: %s",
-    is_timer_timeout ? "true" : "false");
 
   // Wait.
   rmw_ret_t ret = rmw_wait(
@@ -612,35 +548,12 @@ rcl_wait(rcl_wait_set_t * wait_set, int64_t timeout)
     wait_set->impl->rmw_wait_set,
     timeout_argument);
 
-  // Items that are not ready will have been set to NULL by rmw_wait.
-  // We now update our handles accordingly.
-
-  // Check for ready timers
-  // and set not ready timers (which includes canceled timers) to NULL.
-  size_t i;
-  for (i = 0; i < wait_set->impl->timer_index; ++i) {
-    if (!wait_set->timers[i]) {
-      continue;
-    }
-    bool is_ready = false;
-    rcl_ret_t ret = rcl_timer_is_ready(wait_set->timers[i], &is_ready);
-    if (ret != RCL_RET_OK) {
-      return ret;  // The rcl error state should already be set.
-    }
-    RCUTILS_LOG_DEBUG_EXPRESSION_NAMED(is_ready, ROS_PACKAGE_NAME, "Timer in wait set is ready");
-    if (!is_ready) {
-      // wait_set->timers[i] = NULL;
-    }
-  }
   // Check for timeout, return RCL_RET_TIMEOUT only if it wasn't a timer.
   if (ret != RMW_RET_OK && ret != RMW_RET_TIMEOUT) {
     RCL_SET_ERROR_MSG(rmw_get_error_string().str);
     return RCL_RET_ERROR;
   }
 
-  if (RMW_RET_TIMEOUT == ret && !is_timer_timeout) {
-    return RCL_RET_TIMEOUT;
-  }
   return RCL_RET_OK;
 }
 
