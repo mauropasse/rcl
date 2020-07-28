@@ -140,6 +140,11 @@ rcl_wait_set_init(
   rcl_context_t * context,
   rcl_allocator_t allocator);
 
+RCL_PUBLIC
+void *
+rcl_get_custom_wait_set_info(
+  rcl_wait_set_t * wait_set);
+
 /// Finalize a rcl wait set.
 /**
  * Deallocates any memory in the wait set that was allocated in
@@ -214,6 +219,7 @@ rcl_wait_set_get_allocator(const rcl_wait_set_t * wait_set, rcl_allocator_t * al
  *
  * \param[inout] wait_set struct in which the subscription is to be stored
  * \param[in] subscription the subscription to be added to the wait set
+ * \param[in] ros2_handle the rclcpp handle to be added to the rmw subscription
  * \param[out] index the index of the added subscription in the storage container.
  *   This parameter is optional and can be set to `NULL` to be ignored.
  * \return `RCL_RET_OK` if added successfully, or
@@ -228,6 +234,7 @@ rcl_ret_t
 rcl_wait_set_add_subscription(
   rcl_wait_set_t * wait_set,
   const rcl_subscription_t * subscription,
+  void * ros2_handle,
   size_t * index);
 
 /// Remove (sets to `NULL`) all entities in the wait set.

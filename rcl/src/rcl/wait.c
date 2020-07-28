@@ -137,6 +137,7 @@ rcl_wait_set_init(
     wait_set->impl, "allocating memory failed", return RCL_RET_BAD_ALLOC);
   memset(wait_set->impl, 0, sizeof(rcl_wait_set_impl_t));
   wait_set->impl->rmw_subscriptions.subscribers = NULL;
+  wait_set->impl->rmw_subscriptions.ros2_handles = NULL;
   wait_set->impl->rmw_subscriptions.subscriber_count = 0;
   wait_set->impl->rmw_guard_conditions.guard_conditions = NULL;
   wait_set->impl->rmw_guard_conditions.guard_condition_count = 0;
@@ -181,6 +182,15 @@ fail:
   }
   __wait_set_clean_up(wait_set, allocator);
   return fail_ret;
+}
+
+void *
+rcl_get_custom_wait_set_info(
+  rcl_wait_set_t * wait_set)
+{
+  // rmw_wait_set->data represents the custom wait_set
+  // of each rmw
+  return wait_set->impl->rmw_wait_set->data;
 }
 
 rcl_ret_t
@@ -315,10 +325,28 @@ rcl_ret_t
 rcl_wait_set_add_subscription(
   rcl_wait_set_t * wait_set,
   const rcl_subscription_t * subscription,
+  void * ros2_handle,
   size_t * index)
 {
   SET_ADD(subscription)
-  SET_ADD_RMW(subscription, rmw_subscriptions.subscribers, rmw_subscriptions.subscriber_count)
+
+  // Expand SET_ADD_RMW(subscription,
+  //               rmw_subscriptions.subscribers,
+  //               rmw_subscriptions.subscriber_count):
+
+  rmw_subscription_t * rmw_handle = rcl_subscription_get_rmw_handle(subscription);
+
+  RCL_CHECK_FOR_NULL_WITH_MSG (rmw_handle, rcl_get_error_string().str, return RCL_RET_ERROR);
+
+  wait_set->impl->rmw_subscriptions.subscribers[current_index] = rmw_handle->data;
+
+  // Added
+  // printf( "wait.c: Address of ros2_handle: %p\n", ( void * )ros2_handle );
+
+  wait_set->impl->rmw_subscriptions.ros2_handles[current_index] = ros2_handle;
+
+  wait_set->impl->rmw_subscriptions.subscriber_count++;
+
   return RCL_RET_OK;
 }
 
@@ -340,10 +368,15 @@ rcl_wait_set_clear(rcl_wait_set_t * wait_set)
   SET_CLEAR(event);
   SET_CLEAR(timer);
 
-  SET_CLEAR_RMW(
-    subscription,
-    rmw_subscriptions.subscribers,
-    rmw_subscriptions.subscriber_count);
+  // SET_CLEAR_RMW(
+  //   subscription,
+  //   rmw_subscriptions.subscribers,
+  //   rmw_subscriptions.subscriber_count);
+  if (NULL != wait_set->impl->rmw_subscriptions.subscribers) {
+    memset (wait_set->impl->rmw_subscriptions.subscribers, 0, sizeof (void *) *wait_set->impl->rmw_subscriptions.subscriber_count);
+    memset (wait_set->impl->rmw_subscriptions.ros2_handles, 0, sizeof (void *) *wait_set->impl->rmw_subscriptions.subscriber_count);
+    wait_set->impl->rmw_subscriptions.subscriber_count = 0;
+  }
   SET_CLEAR_RMW(
     guard_condition,
     rmw_guard_conditions.guard_conditions,
@@ -381,13 +414,58 @@ rcl_wait_set_resize(
 {
   RCL_CHECK_ARGUMENT_FOR_NULL(wait_set, RCL_RET_INVALID_ARGUMENT);
   RCL_CHECK_ARGUMENT_FOR_NULL(wait_set->impl, RCL_RET_WAIT_SET_INVALID);
-  SET_RESIZE(
-    subscription,
-    SET_RESIZE_RMW_DEALLOC(
-      rmw_subscriptions.subscribers, rmw_subscriptions.subscriber_count),
-    SET_RESIZE_RMW_REALLOC(
-      subscription, rmw_subscriptions.subscribers, rmw_subscriptions.subscriber_count)
-  );
+
+  // Expanded macro and added allocation for new data (ros2_handles)
+  do{
+    rcl_allocator_t allocator = wait_set->impl->allocator;
+    wait_set->size_of_subscriptions = 0;
+    wait_set->impl->subscription_index = 0;
+
+    if (0 == subscriptions_size) {
+      if (wait_set->subscriptions) {
+          allocator.deallocate ((void *) wait_set->subscriptions,allocator.state);
+          wait_set->subscriptions = NULL;
+      }
+      if (wait_set->impl->rmw_subscriptions.subscribers) {
+          allocator.deallocate ((void *) wait_set->impl->rmw_subscriptions.subscribers, allocator.state);
+          wait_set->impl->rmw_subscriptions.subscribers = NULL;
+          wait_set->impl->rmw_subscriptions.subscriber_count = 0;
+      }
+      // Added
+      if (wait_set->impl->rmw_subscriptions.ros2_handles) {
+          allocator.deallocate ((void *) wait_set->impl->rmw_subscriptions.ros2_handles, allocator.state);
+          wait_set->impl->rmw_subscriptions.ros2_handles = NULL;
+          wait_set->impl->rmw_subscriptions.subscriber_count = 0;
+      }
+    } else {
+      wait_set->subscriptions = (const rcl_subscription_t **) allocator.reallocate((void *) wait_set->subscriptions, sizeof (rcl_subscription_t *) * subscriptions_size,allocator.state);
+      RCL_CHECK_FOR_NULL_WITH_MSG (wait_set->subscriptions, "allocating memory failed", return RCL_RET_BAD_ALLOC);
+      memset ((void *) wait_set->subscriptions, 0, sizeof (rcl_subscription_t *) * subscriptions_size);
+
+      wait_set->size_of_subscriptions = subscriptions_size;
+      wait_set->impl->rmw_subscriptions.subscriber_count = 0;
+
+      wait_set->impl->rmw_subscriptions.subscribers =(void **) allocator.reallocate (wait_set->impl->rmw_subscriptions.subscribers, sizeof (void *) *subscriptions_size, allocator.state);
+      if (!wait_set->impl->rmw_subscriptions.subscribers) {
+          allocator.deallocate ((void *) wait_set->subscriptions, allocator.state);
+          wait_set->size_of_subscriptions = 0;
+          RCL_SET_ERROR_MSG ("allocating memory failed");
+          return RCL_RET_BAD_ALLOC;
+      }
+      memset (wait_set->impl->rmw_subscriptions.subscribers, 0, sizeof (void *) * subscriptions_size);
+      // Added
+      wait_set->impl->rmw_subscriptions.ros2_handles =(void **) allocator.reallocate (wait_set->impl->rmw_subscriptions.ros2_handles, sizeof (void *) *subscriptions_size, allocator.state);
+      if (!wait_set->impl->rmw_subscriptions.ros2_handles) {
+          allocator.deallocate ((void *) wait_set->subscriptions, allocator.state);
+          wait_set->size_of_subscriptions = 0;
+          RCL_SET_ERROR_MSG ("allocating memory for ros2_handles failed");
+          return RCL_RET_BAD_ALLOC;
+      }
+      memset (wait_set->impl->rmw_subscriptions.ros2_handles, 0, sizeof (void *) * subscriptions_size);
+    }
+  }
+  while (false);
+
   // Guard condition RCL size is the resize amount given
   SET_RESIZE(guard_condition,;,;);  // NOLINT
 

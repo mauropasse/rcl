@@ -215,7 +215,7 @@ wait_for_subscription_to_be_ready(
         ROS_PACKAGE_NAME, "Error in wait_set_clear: %s", rcl_get_error_string().str);
       return false;
     }
-    if (rcl_wait_set_add_subscription(&wait_set, subscription, NULL) != RCL_RET_OK) {
+    if (rcl_wait_set_add_subscription(&wait_set, subscription, NULL, NULL) != RCL_RET_OK) {
       RCUTILS_LOG_ERROR_NAMED(
         ROS_PACKAGE_NAME, "Error in rcl_wait_set_add_subscription: %s", rcl_get_error_string().str);
       return false;

@@ -291,7 +291,7 @@ wait_for_msgs_and_events(
   EXPECT_EQ(ret, RCL_RET_OK) << rcl_get_error_string().str;
 
   if (nullptr != subscription) {
-    ret = rcl_wait_set_add_subscription(&wait_set, subscription, NULL);
+    ret = rcl_wait_set_add_subscription(&wait_set, subscription, NULL, NULL);
     EXPECT_EQ(ret, RCL_RET_OK) << rcl_get_error_string().str;
   }
   if (nullptr != subscription_event) {
