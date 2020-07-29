@@ -265,6 +265,11 @@ RCL_WARN_UNUSED
 rcl_ret_t
 rcl_wait_set_clear(rcl_wait_set_t * wait_set);
 
+RCL_PUBLIC
+RCL_WARN_UNUSED
+rcl_ret_t
+rcl_wait_set_clear_timers(rcl_wait_set_t * wait_set);
+
 /// Reallocate space for entities in the wait set.
 /**
  * This function will deallocate and reallocate the memory for all entity sets.

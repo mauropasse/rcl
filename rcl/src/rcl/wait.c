@@ -397,6 +397,23 @@ rcl_wait_set_clear(rcl_wait_set_t * wait_set)
   return RCL_RET_OK;
 }
 
+rcl_ret_t
+rcl_wait_set_clear_timers(rcl_wait_set_t * wait_set)
+{
+  RCL_CHECK_ARGUMENT_FOR_NULL(wait_set, RCL_RET_INVALID_ARGUMENT);
+  RCL_CHECK_ARGUMENT_FOR_NULL(wait_set->impl, RCL_RET_WAIT_SET_INVALID);
+
+  SET_CLEAR(guard_condition);
+  SET_CLEAR(timer);
+
+  SET_CLEAR_RMW(
+    guard_condition,
+    rmw_guard_conditions.guard_conditions,
+    rmw_guard_conditions.guard_condition_count);
+
+  return RCL_RET_OK;
+}
+
 /* Implementation-specific notes:
  *
  * Similarly, the underlying rmw representation is reallocated and reset:
@@ -593,6 +610,8 @@ rcl_wait_set_add_event(
   return RCL_RET_OK;
 }
 
+static bool rmw_waitset_is_init = false;
+
 rcl_ret_t
 rcl_wait(rcl_wait_set_t * wait_set, int64_t timeout)
 {
@@ -680,15 +699,21 @@ rcl_wait(rcl_wait_set_t * wait_set, int64_t timeout)
     ROS_PACKAGE_NAME, "Timeout calculated based on next scheduled timer: %s",
     is_timer_timeout ? "true" : "false");
 
-  // Wait.
-  rmw_ret_t ret = rmw_wait(
-    &wait_set->impl->rmw_subscriptions,
-    &wait_set->impl->rmw_guard_conditions,
-    &wait_set->impl->rmw_services,
-    &wait_set->impl->rmw_clients,
-    &wait_set->impl->rmw_events,
-    wait_set->impl->rmw_wait_set,
-    timeout_argument);
+  // Wait only once
+  rmw_ret_t ret = RMW_RET_OK;
+
+  if (!rmw_waitset_is_init){
+    ret = rmw_wait(
+      &wait_set->impl->rmw_subscriptions,
+      &wait_set->impl->rmw_guard_conditions,
+      &wait_set->impl->rmw_services,
+      &wait_set->impl->rmw_clients,
+      &wait_set->impl->rmw_events,
+      wait_set->impl->rmw_wait_set,
+      timeout_argument);
+    // The rmw_waitset has been initialized, no need to do it again. 
+    rmw_waitset_is_init = true;
+  }
 
   // Items that are not ready will have been set to NULL by rmw_wait.
   // We now update our handles accordingly.
@@ -715,15 +740,6 @@ rcl_wait(rcl_wait_set_t * wait_set, int64_t timeout)
     RCL_SET_ERROR_MSG(rmw_get_error_string().str);
     return RCL_RET_ERROR;
   }
-  // Set corresponding rcl subscription handles NULL.
-  for (i = 0; i < wait_set->size_of_subscriptions; ++i) {
-    bool is_ready = wait_set->impl->rmw_subscriptions.subscribers[i] != NULL;
-    RCUTILS_LOG_DEBUG_EXPRESSION_NAMED(
-      is_ready, ROS_PACKAGE_NAME, "Subscription in wait set is ready");
-    if (!is_ready) {
-      wait_set->subscriptions[i] = NULL;
-    }
-  }
   // Set corresponding rcl guard_condition handles NULL.
   for (i = 0; i < wait_set->size_of_guard_conditions; ++i) {
     bool is_ready = wait_set->impl->rmw_guard_conditions.guard_conditions[i] != NULL;
@@ -731,22 +747,6 @@ rcl_wait(rcl_wait_set_t * wait_set, int64_t timeout)
       is_ready, ROS_PACKAGE_NAME, "Guard condition in wait set is ready");
     if (!is_ready) {
       wait_set->guard_conditions[i] = NULL;
-    }
-  }
-  // Set corresponding rcl client handles NULL.
-  for (i = 0; i < wait_set->size_of_clients; ++i) {
-    bool is_ready = wait_set->impl->rmw_clients.clients[i] != NULL;
-    RCUTILS_LOG_DEBUG_EXPRESSION_NAMED(is_ready, ROS_PACKAGE_NAME, "Client in wait set is ready");
-    if (!is_ready) {
-      wait_set->clients[i] = NULL;
-    }
-  }
-  // Set corresponding rcl service handles NULL.
-  for (i = 0; i < wait_set->size_of_services; ++i) {
-    bool is_ready = wait_set->impl->rmw_services.services[i] != NULL;
-    RCUTILS_LOG_DEBUG_EXPRESSION_NAMED(is_ready, ROS_PACKAGE_NAME, "Service in wait set is ready");
-    if (!is_ready) {
-      wait_set->services[i] = NULL;
     }
   }
   // Set corresponding rcl event handles NULL.
