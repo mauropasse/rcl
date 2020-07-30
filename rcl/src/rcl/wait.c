@@ -398,18 +398,39 @@ rcl_wait_set_clear(rcl_wait_set_t * wait_set)
 }
 
 rcl_ret_t
-rcl_wait_set_clear_timers(rcl_wait_set_t * wait_set)
+rcl_wait_set_clear_some(rcl_wait_set_t * wait_set)
 {
   RCL_CHECK_ARGUMENT_FOR_NULL(wait_set, RCL_RET_INVALID_ARGUMENT);
   RCL_CHECK_ARGUMENT_FOR_NULL(wait_set->impl, RCL_RET_WAIT_SET_INVALID);
 
+  //SET_CLEAR(subscription);
   SET_CLEAR(guard_condition);
+  SET_CLEAR(client);
+  SET_CLEAR(service);
+  SET_CLEAR(event);
   SET_CLEAR(timer);
 
+  // if (NULL != wait_set->impl->rmw_subscriptions.subscribers) {
+  //   memset (wait_set->impl->rmw_subscriptions.subscribers, 0, sizeof (void *) *wait_set->impl->rmw_subscriptions.subscriber_count);
+  //   memset (wait_set->impl->rmw_subscriptions.ros2_handles, 0, sizeof (void *) *wait_set->impl->rmw_subscriptions.subscriber_count);
+  //   wait_set->impl->rmw_subscriptions.subscriber_count = 0;
+  // }
   SET_CLEAR_RMW(
     guard_condition,
     rmw_guard_conditions.guard_conditions,
     rmw_guard_conditions.guard_condition_count);
+  SET_CLEAR_RMW(
+    clients,
+    rmw_clients.clients,
+    rmw_clients.client_count);
+  SET_CLEAR_RMW(
+    services,
+    rmw_services.services,
+    rmw_services.service_count);
+  SET_CLEAR_RMW(
+    events,
+    rmw_events.events,
+    rmw_events.event_count);
 
   return RCL_RET_OK;
 }
@@ -737,14 +758,14 @@ rcl_wait(rcl_wait_set_t * wait_set, int64_t timeout)
     return RCL_RET_ERROR;
   }
   // Set corresponding rcl subscription handles NULL.
-  for (i = 0; i < wait_set->size_of_subscriptions; ++i) {
-    bool is_ready = wait_set->impl->rmw_subscriptions.subscribers[i] != NULL;
-    RCUTILS_LOG_DEBUG_EXPRESSION_NAMED(
-      is_ready, ROS_PACKAGE_NAME, "Subscription in wait set is ready");
-    if (!is_ready) {
-      wait_set->subscriptions[i] = NULL;
-    }
-  }
+  // for (i = 0; i < wait_set->size_of_subscriptions; ++i) {
+  //   bool is_ready = wait_set->impl->rmw_subscriptions.subscribers[i] != NULL;
+  //   RCUTILS_LOG_DEBUG_EXPRESSION_NAMED(
+  //     is_ready, ROS_PACKAGE_NAME, "Subscription in wait set is ready");
+  //   if (!is_ready) {
+  //     wait_set->subscriptions[i] = NULL;
+  //   }
+  // }
 
   // Set corresponding rcl guard_condition handles NULL.
   for (i = 0; i < wait_set->size_of_guard_conditions; ++i) {

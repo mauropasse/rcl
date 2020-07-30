@@ -265,10 +265,11 @@ RCL_WARN_UNUSED
 rcl_ret_t
 rcl_wait_set_clear(rcl_wait_set_t * wait_set);
 
+// clear just part of the waitset
 RCL_PUBLIC
 RCL_WARN_UNUSED
 rcl_ret_t
-rcl_wait_set_clear_timers(rcl_wait_set_t * wait_set);
+rcl_wait_set_clear_some(rcl_wait_set_t * wait_set);
 
 /// Reallocate space for entities in the wait set.
 /**
