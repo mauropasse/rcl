@@ -371,6 +371,7 @@ rcl_ret_t
 rcl_wait_set_add_service(
   rcl_wait_set_t * wait_set,
   const rcl_service_t * service,
+  void * ros2_handle,
   size_t * index);
 
 /// Store a pointer to the event in the next empty spot in the set.
