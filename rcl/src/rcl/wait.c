@@ -142,6 +142,7 @@ rcl_wait_set_init(
   wait_set->impl->rmw_guard_conditions.guard_conditions = NULL;
   wait_set->impl->rmw_guard_conditions.guard_condition_count = 0;
   wait_set->impl->rmw_clients.clients = NULL;
+  wait_set->impl->rmw_clients.ros2_handles = NULL;
   wait_set->impl->rmw_clients.client_count = 0;
   wait_set->impl->rmw_services.services = NULL;
   wait_set->impl->rmw_services.ros2_handles = NULL;
@@ -384,10 +385,19 @@ rcl_wait_set_clear(rcl_wait_set_t * wait_set)
     guard_condition,
     rmw_guard_conditions.guard_conditions,
     rmw_guard_conditions.guard_condition_count);
-  SET_CLEAR_RMW(
-    clients,
-    rmw_clients.clients,
-    rmw_clients.client_count);
+
+  // SET_CLEAR_RMW(
+  //   clients,
+  //   rmw_clients.clients,
+  //   rmw_clients.client_count);
+  // Macro expansion:
+  if (NULL != wait_set->impl->rmw_clients.clients) {
+    memset (wait_set->impl->rmw_clients.clients, 0, sizeof (void *) *wait_set->impl->rmw_clients.client_count);
+    memset (wait_set->impl->rmw_clients.ros2_handles, 0, sizeof (void *) *wait_set->impl->rmw_clients.client_count);
+    wait_set->impl->rmw_clients.client_count = 0;
+  }
+
+
   // SET_CLEAR_RMW(
   //   services,
   //   rmw_services.services,
@@ -415,7 +425,7 @@ rcl_wait_set_clear_some(rcl_wait_set_t * wait_set)
 
   //SET_CLEAR(subscription);
   SET_CLEAR(guard_condition);
-  SET_CLEAR(client);
+  //SET_CLEAR(client);
   //SET_CLEAR(service);
   SET_CLEAR(event);
   SET_CLEAR(timer);
@@ -430,10 +440,12 @@ rcl_wait_set_clear_some(rcl_wait_set_t * wait_set)
     guard_condition,
     rmw_guard_conditions.guard_conditions,
     rmw_guard_conditions.guard_condition_count);
-  SET_CLEAR_RMW(
-    clients,
-    rmw_clients.clients,
-    rmw_clients.client_count);
+
+  // if (NULL != wait_set->impl->rmw_clients.clients) {
+  //   memset (wait_set->impl->rmw_clients.clients, 0, sizeof (void *) *wait_set->impl->rmw_clients.client_count);
+  //   memset (wait_set->impl->rmw_clients.ros2_handles, 0, sizeof (void *) *wait_set->impl->rmw_clients.client_count);
+  //   wait_set->impl->rmw_clients.client_count = 0;
+  // }
 
   // if (NULL != wait_set->impl->rmw_services.services) {
   //   memset (wait_set->impl->rmw_services.services, 0, sizeof (void *) *wait_set->impl->rmw_services.service_count);
@@ -468,7 +480,7 @@ rcl_wait_set_resize(
   RCL_CHECK_ARGUMENT_FOR_NULL(wait_set->impl, RCL_RET_WAIT_SET_INVALID);
 
   // Expanded macro and added allocation for new data (ros2_handles)
-  do{
+  {
     rcl_allocator_t allocator = wait_set->impl->allocator;
     wait_set->size_of_subscriptions = 0;
     wait_set->impl->subscription_index = 0;
@@ -516,7 +528,6 @@ rcl_wait_set_resize(
       memset (wait_set->impl->rmw_subscriptions.ros2_handles, 0, sizeof (void *) * subscriptions_size);
     }
   }
-  while (false);
 
   // Guard condition RCL size is the resize amount given
   SET_RESIZE(guard_condition,;,;);  // NOLINT
@@ -552,13 +563,75 @@ rcl_wait_set_resize(
   }
 
   SET_RESIZE(timer,;,;);  // NOLINT
-  SET_RESIZE(
-    client,
-    SET_RESIZE_RMW_DEALLOC(
-      rmw_clients.clients, rmw_clients.client_count),
-    SET_RESIZE_RMW_REALLOC(
-      client, rmw_clients.clients, rmw_clients.client_count)
-  );
+
+
+  // SET_RESIZE(
+  //   client,
+  //   SET_RESIZE_RMW_DEALLOC(
+  //     rmw_clients.clients, rmw_clients.client_count),
+  //   SET_RESIZE_RMW_REALLOC(
+  //     client, rmw_clients.clients, rmw_clients.client_count)
+  // );
+  // Client macro expansion:
+
+  {
+    rcl_allocator_t allocator = wait_set->impl->allocator;
+    wait_set->size_of_clients = 0;
+    wait_set->impl->client_index = 0;
+    if (0 == clients_size) {
+      if (wait_set->clients) {
+        allocator.deallocate ((void *) wait_set->clients, allocator.state);
+        wait_set->clients = NULL;
+      }
+      if (wait_set->impl->rmw_clients.clients) {
+        allocator.deallocate ((void *) wait_set->impl->rmw_clients.clients, allocator.state);
+        wait_set->impl->rmw_clients.clients = NULL;
+        wait_set->impl->rmw_clients.client_count = 0;
+      }
+      // Added
+      if (wait_set->impl->rmw_clients.ros2_handles) {
+          allocator.deallocate ((void *) wait_set->impl->rmw_clients.ros2_handles, allocator.state);
+          wait_set->impl->rmw_clients.ros2_handles = NULL;
+          wait_set->impl->rmw_clients.client_count = 0;
+      }
+    } else {
+      wait_set->clients = (const rcl_client_t **) allocator.reallocate (
+          (void *) wait_set->clients, sizeof (rcl_client_t*) *clients_size, allocator.state);
+      RCL_CHECK_FOR_NULL_WITH_MSG (wait_set->clients, "allocating memory failed", return RCL_RET_BAD_ALLOC);
+
+      memset ((void *) wait_set->clients, 0, sizeof (rcl_client_t *) * clients_size);
+      wait_set->size_of_clients = clients_size;
+      wait_set->impl->rmw_clients.client_count = 0;
+      wait_set->impl->rmw_clients.clients = (void **) allocator.reallocate(
+                wait_set->impl->rmw_clients.clients,
+                sizeof (void *) * clients_size,
+                allocator.state);
+      if (!wait_set->impl->rmw_clients.clients) {
+        allocator.deallocate ((void *)wait_set->clients, allocator.state);
+        wait_set->size_of_clients = 0;
+        RCL_SET_ERROR_MSG ("allocating memory failed");
+        return RCL_RET_BAD_ALLOC;
+      }
+      memset (wait_set->impl->rmw_clients.clients, 0, sizeof (void *) * clients_size);
+
+      // Added
+      wait_set->impl->rmw_clients.ros2_handles = (void **) allocator.reallocate(
+                wait_set->impl->rmw_clients.ros2_handles,
+                sizeof (void *) * clients_size,
+                allocator.state);
+      if (!wait_set->impl->rmw_clients.ros2_handles) {
+        allocator.deallocate ((void *)wait_set->clients, allocator.state);
+        wait_set->size_of_clients = 0;
+        RCL_SET_ERROR_MSG ("allocating memory for client ros2 handles failed");
+        return RCL_RET_BAD_ALLOC;
+      }
+      memset (wait_set->impl->rmw_clients.ros2_handles, 0, sizeof (void *) * clients_size);
+    }
+  }
+  // End client macro expansion
+
+
+
   // SET_RESIZE(
   //   service,
   //   SET_RESIZE_RMW_DEALLOC(
@@ -567,56 +640,58 @@ rcl_wait_set_resize(
   //     service, rmw_services.services, rmw_services.service_count)
   // );
   // Macro expansion:
-  rcl_allocator_t allocator = wait_set->impl->allocator;
-  wait_set->size_of_services = 0;
-  wait_set->impl->service_index = 0;
-  if (0 == services_size) {
-    if (wait_set->services) {
-      allocator.deallocate ((void *) wait_set->services, allocator.state);
-      wait_set->services = NULL;
-    }
-    if (wait_set->impl->rmw_services.services) {
-      allocator.deallocate ((void *)wait_set->impl->rmw_services.services, allocator.state);
-      wait_set->impl->rmw_services.services = NULL;
+  {
+    rcl_allocator_t allocator = wait_set->impl->allocator;
+    wait_set->size_of_services = 0;
+    wait_set->impl->service_index = 0;
+    if (0 == services_size) {
+      if (wait_set->services) {
+        allocator.deallocate ((void *) wait_set->services, allocator.state);
+        wait_set->services = NULL;
+      }
+      if (wait_set->impl->rmw_services.services) {
+        allocator.deallocate ((void *)wait_set->impl->rmw_services.services, allocator.state);
+        wait_set->impl->rmw_services.services = NULL;
+        wait_set->impl->rmw_services.service_count = 0;
+      }
+      // Added
+      if (wait_set->impl->rmw_services.ros2_handles) {
+        allocator.deallocate ((void *)wait_set->impl->rmw_services.ros2_handles, allocator.state);
+        wait_set->impl->rmw_services.ros2_handles = NULL;
+        wait_set->impl->rmw_services.service_count = 0;
+      }
+    } else {
+      wait_set->services = (const rcl_service_t **) allocator.reallocate ((void *) wait_set->services,
+                   sizeof (rcl_service_t *) *services_size, allocator.state);
+      RCL_CHECK_FOR_NULL_WITH_MSG (wait_set->services, "allocating memory failed", return RCL_RET_BAD_ALLOC);
+      memset ((void *) wait_set->services, 0, sizeof (rcl_service_t *) * services_size);
+      wait_set->size_of_services = services_size;
       wait_set->impl->rmw_services.service_count = 0;
-    }
-    // Added
-    if (wait_set->impl->rmw_services.ros2_handles) {
-      allocator.deallocate ((void *)wait_set->impl->rmw_services.ros2_handles, allocator.state);
-      wait_set->impl->rmw_services.ros2_handles = NULL;
-      wait_set->impl->rmw_services.service_count = 0;
-    }
-  } else {
-    wait_set->services = (const rcl_service_t **) allocator.reallocate ((void *) wait_set->services,
-                 sizeof (rcl_service_t *) *services_size, allocator.state);
-    RCL_CHECK_FOR_NULL_WITH_MSG (wait_set->services, "allocating memory failed", return RCL_RET_BAD_ALLOC);
-    memset ((void *) wait_set->services, 0, sizeof (rcl_service_t *) * services_size);
-    wait_set->size_of_services = services_size;
-    wait_set->impl->rmw_services.service_count = 0;
 
-    wait_set->impl->rmw_services.services = (void **) allocator.reallocate (
-              wait_set->impl->rmw_services.services,
-              sizeof (void *) * services_size,
-              allocator.state);
-    if (!wait_set->impl->rmw_services.services) {
-        allocator.deallocate ((void *) wait_set->services,allocator.state);
-        wait_set->size_of_services = 0;
-        RCL_SET_ERROR_MSG ("allocating memory failed");
-        return RCL_RET_BAD_ALLOC;
+      wait_set->impl->rmw_services.services = (void **) allocator.reallocate (
+                wait_set->impl->rmw_services.services,
+                sizeof (void *) * services_size,
+                allocator.state);
+      if (!wait_set->impl->rmw_services.services) {
+          allocator.deallocate ((void *) wait_set->services,allocator.state);
+          wait_set->size_of_services = 0;
+          RCL_SET_ERROR_MSG ("allocating memory failed");
+          return RCL_RET_BAD_ALLOC;
+      }
+      memset (wait_set->impl->rmw_services.services, 0, sizeof (void *) * services_size);
+      // Added
+      wait_set->impl->rmw_services.ros2_handles = (void **) allocator.reallocate (
+                wait_set->impl->rmw_services.ros2_handles,
+                sizeof (void *) * services_size,
+                allocator.state);
+      if (!wait_set->impl->rmw_services.ros2_handles) {
+          allocator.deallocate ((void *) wait_set->services,allocator.state);
+          wait_set->size_of_services = 0;
+          RCL_SET_ERROR_MSG ("allocating memory for ros2_handles failed");
+          return RCL_RET_BAD_ALLOC;
+      }
+      memset (wait_set->impl->rmw_services.ros2_handles, 0, sizeof (void *) * services_size);
     }
-    memset (wait_set->impl->rmw_services.services, 0, sizeof (void *) * services_size);
-    // Added
-    wait_set->impl->rmw_services.ros2_handles = (void **) allocator.reallocate (
-              wait_set->impl->rmw_services.ros2_handles,
-              sizeof (void *) * services_size,
-              allocator.state);
-    if (!wait_set->impl->rmw_services.ros2_handles) {
-        allocator.deallocate ((void *) wait_set->services,allocator.state);
-        wait_set->size_of_services = 0;
-        RCL_SET_ERROR_MSG ("allocating memory for ros2_handles failed");
-        return RCL_RET_BAD_ALLOC;
-    }
-    memset (wait_set->impl->rmw_services.ros2_handles, 0, sizeof (void *) * services_size);
   }
   //Finish macro expansion
 
@@ -671,10 +746,18 @@ rcl_ret_t
 rcl_wait_set_add_client(
   rcl_wait_set_t * wait_set,
   const rcl_client_t * client,
+  void * ros2_handle,
   size_t * index)
 {
   SET_ADD(client)
-  SET_ADD_RMW(client, rmw_clients.clients, rmw_clients.client_count)
+  //SET_ADD_RMW(client, rmw_clients.clients, rmw_clients.client_count)
+  // Macro expanded
+  rmw_client_t *rmw_handle = rcl_client_get_rmw_handle (client);
+  RCL_CHECK_FOR_NULL_WITH_MSG (rmw_handle, rcl_get_error_string().str, return RCL_RET_ERROR);
+  wait_set->impl->rmw_clients.clients[current_index] = rmw_handle->data;
+  wait_set->impl->rmw_clients.ros2_handles[current_index] = ros2_handle;
+  wait_set->impl->rmw_clients.client_count++;
+  // Finish macro expansion
   return RCL_RET_OK;
 }
 
@@ -852,22 +935,25 @@ rcl_wait(rcl_wait_set_t * wait_set, int64_t timeout)
       wait_set->guard_conditions[i] = NULL;
     }
   }
+
   // Set corresponding rcl client handles NULL.
-  for (i = 0; i < wait_set->size_of_clients; ++i) {
-    bool is_ready = wait_set->impl->rmw_clients.clients[i] != NULL;
-    RCUTILS_LOG_DEBUG_EXPRESSION_NAMED(is_ready, ROS_PACKAGE_NAME, "Client in wait set is ready");
-    if (!is_ready) {
-      wait_set->clients[i] = NULL;
-    }
-  }
+  // for (i = 0; i < wait_set->size_of_clients; ++i) {
+  //   bool is_ready = wait_set->impl->rmw_clients.clients[i] != NULL;
+  //   RCUTILS_LOG_DEBUG_EXPRESSION_NAMED(is_ready, ROS_PACKAGE_NAME, "Client in wait set is ready");
+  //   if (!is_ready) {
+  //     wait_set->clients[i] = NULL;
+  //   }
+  // }
+
   // Set corresponding rcl service handles NULL.
-  for (i = 0; i < wait_set->size_of_services; ++i) {
-    bool is_ready = wait_set->impl->rmw_services.services[i] != NULL;
-    RCUTILS_LOG_DEBUG_EXPRESSION_NAMED(is_ready, ROS_PACKAGE_NAME, "Service in wait set is ready");
-    if (!is_ready) {
-      wait_set->services[i] = NULL;
-    }
-  }
+  // for (i = 0; i < wait_set->size_of_services; ++i) {
+  //   bool is_ready = wait_set->impl->rmw_services.services[i] != NULL;
+  //   RCUTILS_LOG_DEBUG_EXPRESSION_NAMED(is_ready, ROS_PACKAGE_NAME, "Service in wait set is ready");
+  //   if (!is_ready) {
+  //     wait_set->services[i] = NULL;
+  //   }
+  // }
+
   // Set corresponding rcl event handles NULL.
   for (i = 0; i < wait_set->size_of_events; ++i) {
     bool is_ready = wait_set->impl->rmw_events.events[i] != NULL;
