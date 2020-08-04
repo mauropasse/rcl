@@ -26,6 +26,7 @@ extern "C"
 
 #include "rcl/error_handling.h"
 #include "rcl/time.h"
+#include "rcutils/event_types.h"
 #include "rcutils/logging_macros.h"
 #include "rmw/error_handling.h"
 #include "rmw/rmw.h"
@@ -137,15 +138,15 @@ rcl_wait_set_init(
     wait_set->impl, "allocating memory failed", return RCL_RET_BAD_ALLOC);
   memset(wait_set->impl, 0, sizeof(rcl_wait_set_impl_t));
   wait_set->impl->rmw_subscriptions.subscribers = NULL;
-  wait_set->impl->rmw_subscriptions.ros2_handles = NULL;
+  wait_set->impl->rmw_subscriptions.event_hooks = NULL;
   wait_set->impl->rmw_subscriptions.subscriber_count = 0;
   wait_set->impl->rmw_guard_conditions.guard_conditions = NULL;
   wait_set->impl->rmw_guard_conditions.guard_condition_count = 0;
   wait_set->impl->rmw_clients.clients = NULL;
-  wait_set->impl->rmw_clients.ros2_handles = NULL;
+  wait_set->impl->rmw_clients.event_hooks = NULL;
   wait_set->impl->rmw_clients.client_count = 0;
   wait_set->impl->rmw_services.services = NULL;
-  wait_set->impl->rmw_services.ros2_handles = NULL;
+  wait_set->impl->rmw_services.event_hooks = NULL;
   wait_set->impl->rmw_services.service_count = 0;
   wait_set->impl->rmw_events.events = NULL;
   wait_set->impl->rmw_events.event_count = 0;
@@ -327,7 +328,7 @@ rcl_ret_t
 rcl_wait_set_add_subscription(
   rcl_wait_set_t * wait_set,
   const rcl_subscription_t * subscription,
-  void * ros2_handle,
+  void * event_hook,
   size_t * index)
 {
   SET_ADD(subscription)
@@ -343,9 +344,7 @@ rcl_wait_set_add_subscription(
   wait_set->impl->rmw_subscriptions.subscribers[current_index] = rmw_handle->data;
 
   // Added
-  // printf( "wait.c: Address of ros2_handle: %p\n", ( void * )ros2_handle );
-
-  wait_set->impl->rmw_subscriptions.ros2_handles[current_index] = ros2_handle;
+  wait_set->impl->rmw_subscriptions.event_hooks[current_index] = event_hook;
 
   wait_set->impl->rmw_subscriptions.subscriber_count++;
 
@@ -376,8 +375,8 @@ rcl_wait_set_clear(rcl_wait_set_t * wait_set)
   //   rmw_subscriptions.subscriber_count);
   // Macro expansion
   if (NULL != wait_set->impl->rmw_subscriptions.subscribers) {
-    memset (wait_set->impl->rmw_subscriptions.subscribers, 0, sizeof (void *) *wait_set->impl->rmw_subscriptions.subscriber_count);
-    memset (wait_set->impl->rmw_subscriptions.ros2_handles, 0, sizeof (void *) *wait_set->impl->rmw_subscriptions.subscriber_count);
+    memset (wait_set->impl->rmw_subscriptions.subscribers, 0, sizeof(void *) * wait_set->impl->rmw_subscriptions.subscriber_count);
+    memset (wait_set->impl->rmw_subscriptions.event_hooks, 0, sizeof(EventHook) * wait_set->impl->rmw_subscriptions.subscriber_count);
     wait_set->impl->rmw_subscriptions.subscriber_count = 0;
   }
   // End macro expansion
@@ -392,8 +391,8 @@ rcl_wait_set_clear(rcl_wait_set_t * wait_set)
   //   rmw_clients.client_count);
   // Macro expansion:
   if (NULL != wait_set->impl->rmw_clients.clients) {
-    memset (wait_set->impl->rmw_clients.clients, 0, sizeof (void *) *wait_set->impl->rmw_clients.client_count);
-    memset (wait_set->impl->rmw_clients.ros2_handles, 0, sizeof (void *) *wait_set->impl->rmw_clients.client_count);
+    memset (wait_set->impl->rmw_clients.clients, 0, sizeof(void *) * wait_set->impl->rmw_clients.client_count);
+    memset (wait_set->impl->rmw_clients.event_hooks, 0, sizeof(EventHook) * wait_set->impl->rmw_clients.client_count);
     wait_set->impl->rmw_clients.client_count = 0;
   }
 
@@ -404,8 +403,8 @@ rcl_wait_set_clear(rcl_wait_set_t * wait_set)
   //   rmw_services.service_count);
   // Macro expansion:
   if (NULL != wait_set->impl->rmw_services.services) {
-    memset (wait_set->impl->rmw_services.services, 0, sizeof (void *) *wait_set->impl->rmw_services.service_count);
-    memset (wait_set->impl->rmw_services.ros2_handles, 0, sizeof (void *) *wait_set->impl->rmw_services.service_count);
+    memset (wait_set->impl->rmw_services.services, 0, sizeof (void *) * wait_set->impl->rmw_services.service_count);
+    memset (wait_set->impl->rmw_services.event_hooks, 0, sizeof(EventHook) * wait_set->impl->rmw_services.service_count);
     wait_set->impl->rmw_services.service_count = 0;
   }
   // End macro expansion
@@ -431,8 +430,8 @@ rcl_wait_set_clear_some(rcl_wait_set_t * wait_set)
   SET_CLEAR(timer);
 
   // if (NULL != wait_set->impl->rmw_subscriptions.subscribers) {
-  //   memset (wait_set->impl->rmw_subscriptions.subscribers, 0, sizeof (void *) *wait_set->impl->rmw_subscriptions.subscriber_count);
-  //   memset (wait_set->impl->rmw_subscriptions.ros2_handles, 0, sizeof (void *) *wait_set->impl->rmw_subscriptions.subscriber_count);
+  //   memset (wait_set->impl->rmw_subscriptions.subscribers, 0, sizeof(void *) * wait_set->impl->rmw_subscriptions.subscriber_count);
+  //   memset (wait_set->impl->rmw_subscriptions.event_hooks, 0, sizeof(EventHook) * wait_set->impl->rmw_subscriptions.subscriber_count);
   //   wait_set->impl->rmw_subscriptions.subscriber_count = 0;
   // }
 
@@ -442,14 +441,14 @@ rcl_wait_set_clear_some(rcl_wait_set_t * wait_set)
     rmw_guard_conditions.guard_condition_count);
 
   // if (NULL != wait_set->impl->rmw_clients.clients) {
-  //   memset (wait_set->impl->rmw_clients.clients, 0, sizeof (void *) *wait_set->impl->rmw_clients.client_count);
-  //   memset (wait_set->impl->rmw_clients.ros2_handles, 0, sizeof (void *) *wait_set->impl->rmw_clients.client_count);
+  //   memset (wait_set->impl->rmw_clients.clients, 0, sizeof(void *) * wait_set->impl->rmw_clients.client_count);
+  //   memset (wait_set->impl->rmw_clients.event_hooks, 0, sizeof(EventHook) * wait_set->impl->rmw_clients.client_count);
   //   wait_set->impl->rmw_clients.client_count = 0;
   // }
 
   // if (NULL != wait_set->impl->rmw_services.services) {
-  //   memset (wait_set->impl->rmw_services.services, 0, sizeof (void *) *wait_set->impl->rmw_services.service_count);
-  //   memset (wait_set->impl->rmw_services.ros2_handles, 0, sizeof (void *) *wait_set->impl->rmw_services.service_count);
+  //   memset (wait_set->impl->rmw_services.services, 0, sizeof(void *) * wait_set->impl->rmw_services.service_count);
+  //   memset (wait_set->impl->rmw_services.event_hooks, 0, sizeof(EventHook) * wait_set->impl->rmw_services.service_count);
   //   wait_set->impl->rmw_services.service_count = 0;
   // }
 
@@ -479,7 +478,7 @@ rcl_wait_set_resize(
   RCL_CHECK_ARGUMENT_FOR_NULL(wait_set, RCL_RET_INVALID_ARGUMENT);
   RCL_CHECK_ARGUMENT_FOR_NULL(wait_set->impl, RCL_RET_WAIT_SET_INVALID);
 
-  // Expanded macro and added allocation for new data (ros2_handles)
+  // Expanded macro and added allocation for new data (event_hooks)
   {
     rcl_allocator_t allocator = wait_set->impl->allocator;
     wait_set->size_of_subscriptions = 0;
@@ -496,9 +495,9 @@ rcl_wait_set_resize(
           wait_set->impl->rmw_subscriptions.subscriber_count = 0;
       }
       // Added
-      if (wait_set->impl->rmw_subscriptions.ros2_handles) {
-          allocator.deallocate ((void *) wait_set->impl->rmw_subscriptions.ros2_handles, allocator.state);
-          wait_set->impl->rmw_subscriptions.ros2_handles = NULL;
+      if (wait_set->impl->rmw_subscriptions.event_hooks) {
+          allocator.deallocate ((void *) wait_set->impl->rmw_subscriptions.event_hooks, allocator.state);
+          wait_set->impl->rmw_subscriptions.event_hooks = NULL;
           wait_set->impl->rmw_subscriptions.subscriber_count = 0;
       }
     } else {
@@ -509,7 +508,7 @@ rcl_wait_set_resize(
       wait_set->size_of_subscriptions = subscriptions_size;
       wait_set->impl->rmw_subscriptions.subscriber_count = 0;
 
-      wait_set->impl->rmw_subscriptions.subscribers =(void **) allocator.reallocate (wait_set->impl->rmw_subscriptions.subscribers, sizeof (void *) *subscriptions_size, allocator.state);
+      wait_set->impl->rmw_subscriptions.subscribers =(void **) allocator.reallocate (wait_set->impl->rmw_subscriptions.subscribers, sizeof (void *) * subscriptions_size, allocator.state);
       if (!wait_set->impl->rmw_subscriptions.subscribers) {
           allocator.deallocate ((void *) wait_set->subscriptions, allocator.state);
           wait_set->size_of_subscriptions = 0;
@@ -518,14 +517,14 @@ rcl_wait_set_resize(
       }
       memset (wait_set->impl->rmw_subscriptions.subscribers, 0, sizeof (void *) * subscriptions_size);
       // Added
-      wait_set->impl->rmw_subscriptions.ros2_handles =(void **) allocator.reallocate (wait_set->impl->rmw_subscriptions.ros2_handles, sizeof (void *) *subscriptions_size, allocator.state);
-      if (!wait_set->impl->rmw_subscriptions.ros2_handles) {
+      wait_set->impl->rmw_subscriptions.event_hooks =(void **) allocator.reallocate (wait_set->impl->rmw_subscriptions.event_hooks, sizeof(EventHook) * subscriptions_size, allocator.state);
+      if (!wait_set->impl->rmw_subscriptions.event_hooks) {
           allocator.deallocate ((void *) wait_set->subscriptions, allocator.state);
           wait_set->size_of_subscriptions = 0;
-          RCL_SET_ERROR_MSG ("allocating memory for ros2_handles failed");
+          RCL_SET_ERROR_MSG ("allocating memory for event_hooks failed");
           return RCL_RET_BAD_ALLOC;
       }
-      memset (wait_set->impl->rmw_subscriptions.ros2_handles, 0, sizeof (void *) * subscriptions_size);
+      memset (wait_set->impl->rmw_subscriptions.event_hooks, 0, sizeof(EventHook) * subscriptions_size);
     }
   }
 
@@ -589,9 +588,9 @@ rcl_wait_set_resize(
         wait_set->impl->rmw_clients.client_count = 0;
       }
       // Added
-      if (wait_set->impl->rmw_clients.ros2_handles) {
-          allocator.deallocate ((void *) wait_set->impl->rmw_clients.ros2_handles, allocator.state);
-          wait_set->impl->rmw_clients.ros2_handles = NULL;
+      if (wait_set->impl->rmw_clients.event_hooks) {
+          allocator.deallocate ((void *) wait_set->impl->rmw_clients.event_hooks, allocator.state);
+          wait_set->impl->rmw_clients.event_hooks = NULL;
           wait_set->impl->rmw_clients.client_count = 0;
       }
     } else {
@@ -615,17 +614,17 @@ rcl_wait_set_resize(
       memset (wait_set->impl->rmw_clients.clients, 0, sizeof (void *) * clients_size);
 
       // Added
-      wait_set->impl->rmw_clients.ros2_handles = (void **) allocator.reallocate(
-                wait_set->impl->rmw_clients.ros2_handles,
-                sizeof (void *) * clients_size,
+      wait_set->impl->rmw_clients.event_hooks = (void **) allocator.reallocate(
+                wait_set->impl->rmw_clients.event_hooks,
+                sizeof(EventHook) * clients_size,
                 allocator.state);
-      if (!wait_set->impl->rmw_clients.ros2_handles) {
+      if (!wait_set->impl->rmw_clients.event_hooks) {
         allocator.deallocate ((void *)wait_set->clients, allocator.state);
         wait_set->size_of_clients = 0;
         RCL_SET_ERROR_MSG ("allocating memory for client ros2 handles failed");
         return RCL_RET_BAD_ALLOC;
       }
-      memset (wait_set->impl->rmw_clients.ros2_handles, 0, sizeof (void *) * clients_size);
+      memset (wait_set->impl->rmw_clients.event_hooks, 0, sizeof(EventHook) * clients_size);
     }
   }
   // End client macro expansion
@@ -655,9 +654,9 @@ rcl_wait_set_resize(
         wait_set->impl->rmw_services.service_count = 0;
       }
       // Added
-      if (wait_set->impl->rmw_services.ros2_handles) {
-        allocator.deallocate ((void *)wait_set->impl->rmw_services.ros2_handles, allocator.state);
-        wait_set->impl->rmw_services.ros2_handles = NULL;
+      if (wait_set->impl->rmw_services.event_hooks) {
+        allocator.deallocate ((void *)wait_set->impl->rmw_services.event_hooks, allocator.state);
+        wait_set->impl->rmw_services.event_hooks = NULL;
         wait_set->impl->rmw_services.service_count = 0;
       }
     } else {
@@ -680,17 +679,17 @@ rcl_wait_set_resize(
       }
       memset (wait_set->impl->rmw_services.services, 0, sizeof (void *) * services_size);
       // Added
-      wait_set->impl->rmw_services.ros2_handles = (void **) allocator.reallocate (
-                wait_set->impl->rmw_services.ros2_handles,
-                sizeof (void *) * services_size,
+      wait_set->impl->rmw_services.event_hooks = (void **) allocator.reallocate (
+                wait_set->impl->rmw_services.event_hooks,
+                sizeof(EventHook) * services_size,
                 allocator.state);
-      if (!wait_set->impl->rmw_services.ros2_handles) {
+      if (!wait_set->impl->rmw_services.event_hooks) {
           allocator.deallocate ((void *) wait_set->services,allocator.state);
           wait_set->size_of_services = 0;
-          RCL_SET_ERROR_MSG ("allocating memory for ros2_handles failed");
+          RCL_SET_ERROR_MSG ("allocating memory for event_hooks failed");
           return RCL_RET_BAD_ALLOC;
       }
-      memset (wait_set->impl->rmw_services.ros2_handles, 0, sizeof (void *) * services_size);
+      memset (wait_set->impl->rmw_services.event_hooks, 0, sizeof(EventHook) * services_size);
     }
   }
   //Finish macro expansion
@@ -746,7 +745,7 @@ rcl_ret_t
 rcl_wait_set_add_client(
   rcl_wait_set_t * wait_set,
   const rcl_client_t * client,
-  void * ros2_handle,
+  void * event_hook,
   size_t * index)
 {
   SET_ADD(client)
@@ -755,7 +754,7 @@ rcl_wait_set_add_client(
   rmw_client_t *rmw_handle = rcl_client_get_rmw_handle (client);
   RCL_CHECK_FOR_NULL_WITH_MSG (rmw_handle, rcl_get_error_string().str, return RCL_RET_ERROR);
   wait_set->impl->rmw_clients.clients[current_index] = rmw_handle->data;
-  wait_set->impl->rmw_clients.ros2_handles[current_index] = ros2_handle;
+  wait_set->impl->rmw_clients.event_hooks[current_index] = event_hook;
   wait_set->impl->rmw_clients.client_count++;
   // Finish macro expansion
   return RCL_RET_OK;
@@ -765,7 +764,7 @@ rcl_ret_t
 rcl_wait_set_add_service(
   rcl_wait_set_t * wait_set,
   const rcl_service_t * service,
-  void * ros2_handle,
+  void * event_hook,
   size_t * index)
 {
   SET_ADD(service)
@@ -774,7 +773,7 @@ rcl_wait_set_add_service(
   rmw_service_t *rmw_handle = rcl_service_get_rmw_handle (service);
   RCL_CHECK_FOR_NULL_WITH_MSG (rmw_handle, rcl_get_error_string ().str, return RCL_RET_ERROR);
   wait_set->impl->rmw_services.services[current_index] = rmw_handle->data;
-  wait_set->impl->rmw_services.ros2_handles[current_index] = ros2_handle;
+  wait_set->impl->rmw_services.event_hooks[current_index] = event_hook;
   wait_set->impl->rmw_services.service_count++;
   // Finish macro expansion
   return RCL_RET_OK;
