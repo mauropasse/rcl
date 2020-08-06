@@ -187,15 +187,6 @@ fail:
   return fail_ret;
 }
 
-void *
-rcl_get_custom_wait_set_info(
-  rcl_wait_set_t * wait_set)
-{
-  // rmw_wait_set->data represents the custom wait_set
-  // of each rmw
-  return wait_set->impl->rmw_wait_set->data;
-}
-
 rcl_ret_t
 rcl_wait_set_fini(rcl_wait_set_t * wait_set)
 {
@@ -878,10 +869,8 @@ rcl_wait(rcl_wait_set_t * wait_set, int64_t timeout)
     ROS_PACKAGE_NAME, "Timeout calculated based on next scheduled timer: %s",
     is_timer_timeout ? "true" : "false");
 
-  // Wait only once
-  rmw_ret_t ret = RMW_RET_OK;
-
-  ret = rmw_wait(
+  // Wait.
+  rmw_ret_t ret = rmw_wait(
     &wait_set->impl->rmw_subscriptions,
     &wait_set->impl->rmw_guard_conditions,
     &wait_set->impl->rmw_services,

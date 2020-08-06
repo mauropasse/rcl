@@ -140,11 +140,6 @@ rcl_wait_set_init(
   rcl_context_t * context,
   rcl_allocator_t allocator);
 
-RCL_PUBLIC
-void *
-rcl_get_custom_wait_set_info(
-  rcl_wait_set_t * wait_set);
-
 /// Finalize a rcl wait set.
 /**
  * Deallocates any memory in the wait set that was allocated in
