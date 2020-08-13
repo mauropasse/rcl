@@ -483,7 +483,7 @@ rcl_wait(rcl_wait_set_t * wait_set, int64_t timeout);
 RCL_PUBLIC
 RCL_WARN_UNUSED
 rcl_ret_t
-rcl_attach_event_hook(rcl_wait_set_t * wait_set);
+rcl_init_waitset(rcl_wait_set_t * wait_set);
 
 /// Return `true` if the wait set is valid, else `false`.
 /**

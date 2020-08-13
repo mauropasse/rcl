@@ -958,12 +958,15 @@ rcl_wait(rcl_wait_set_t * wait_set, int64_t timeout)
 }
 
 rcl_ret_t
-rcl_attach_event_hook(rcl_wait_set_t * wait_set)
+rcl_init_waitset(rcl_wait_set_t * wait_set)
 {
-  return rmw_attach_event_hook(
+  return rmw_init_waitset(
     &wait_set->impl->rmw_subscriptions,
+    &wait_set->impl->rmw_guard_conditions,
     &wait_set->impl->rmw_services,
-    &wait_set->impl->rmw_clients);
+    &wait_set->impl->rmw_clients,
+    &wait_set->impl->rmw_events,
+    wait_set->impl->rmw_wait_set);
 }
 
 #ifdef __cplusplus
