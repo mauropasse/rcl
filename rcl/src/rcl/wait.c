@@ -747,8 +747,6 @@ rcl_wait_set_add_guard_condition(
 
   wait_set->impl->rmw_guard_conditions.event_hooks[current_index] = event_hook;
 
-  EventHook * ev_hook = wait_set->impl->rmw_guard_conditions.event_hooks[current_index];
-
   wait_set->impl->rmw_guard_conditions.guard_condition_count++;
 
   return RCL_RET_OK;
