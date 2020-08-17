@@ -141,6 +141,7 @@ rcl_wait_set_init(
   wait_set->impl->rmw_subscriptions.event_hooks = NULL;
   wait_set->impl->rmw_subscriptions.subscriber_count = 0;
   wait_set->impl->rmw_guard_conditions.guard_conditions = NULL;
+  wait_set->impl->rmw_guard_conditions.event_hooks = NULL;
   wait_set->impl->rmw_guard_conditions.guard_condition_count = 0;
   wait_set->impl->rmw_clients.clients = NULL;
   wait_set->impl->rmw_clients.event_hooks = NULL;
@@ -371,10 +372,19 @@ rcl_wait_set_clear(rcl_wait_set_t * wait_set)
     wait_set->impl->rmw_subscriptions.subscriber_count = 0;
   }
   // End macro expansion
-  SET_CLEAR_RMW(
-    guard_condition,
-    rmw_guard_conditions.guard_conditions,
-    rmw_guard_conditions.guard_condition_count);
+
+  // SET_CLEAR_RMW(
+  //   guard_condition,
+  //   rmw_guard_conditions.guard_conditions,
+  //   rmw_guard_conditions.guard_condition_count);
+  // Macro expansion:
+  if (NULL != wait_set->impl->rmw_guard_conditions.guard_conditions) {
+   memset(wait_set->impl->rmw_guard_conditions.guard_conditions, 0, sizeof(void *) * wait_set->impl->rmw_guard_conditions.guard_condition_count);
+   memset(wait_set->impl->rmw_guard_conditions.event_hooks, 0, sizeof(EventHook) * wait_set->impl->rmw_guard_conditions.guard_condition_count);
+   wait_set->impl->rmw_guard_conditions.guard_condition_count = 0;
+  }
+  // End macro expansion
+
 
   // SET_CLEAR_RMW(
   //   clients,
@@ -414,7 +424,7 @@ rcl_wait_set_clear_some(rcl_wait_set_t * wait_set)
   RCL_CHECK_ARGUMENT_FOR_NULL(wait_set->impl, RCL_RET_WAIT_SET_INVALID);
 
   //SET_CLEAR(subscription);
-  SET_CLEAR(guard_condition);
+  //SET_CLEAR(guard_condition);
   //SET_CLEAR(client);
   //SET_CLEAR(service);
   SET_CLEAR(event);
@@ -426,10 +436,11 @@ rcl_wait_set_clear_some(rcl_wait_set_t * wait_set)
   //   wait_set->impl->rmw_subscriptions.subscriber_count = 0;
   // }
 
-  SET_CLEAR_RMW(
-    guard_condition,
-    rmw_guard_conditions.guard_conditions,
-    rmw_guard_conditions.guard_condition_count);
+  // if (NULL != wait_set->impl->rmw_guard_conditions.guard_conditions) {
+  //  memset(wait_set->impl->rmw_guard_conditions.guard_conditions, 0, sizeof(void *) * wait_set->impl->rmw_guard_conditions.guard_condition_count);
+  //  memset(wait_set->impl->rmw_guard_conditions.event_hooks, 0, sizeof(EventHook) * wait_set->impl->rmw_guard_conditions.guard_condition_count);
+  //  wait_set->impl->rmw_guard_conditions.guard_condition_count = 0;
+  // }
 
   // if (NULL != wait_set->impl->rmw_clients.clients) {
   //   memset (wait_set->impl->rmw_clients.clients, 0, sizeof(void *) * wait_set->impl->rmw_clients.client_count);
@@ -468,6 +479,12 @@ rcl_wait_set_resize(
 {
   RCL_CHECK_ARGUMENT_FOR_NULL(wait_set, RCL_RET_INVALID_ARGUMENT);
   RCL_CHECK_ARGUMENT_FOR_NULL(wait_set->impl, RCL_RET_WAIT_SET_INVALID);
+
+  // SET_RESIZE(
+  //   subscription,
+  //   SET_RESIZE_RMW_DEALLOC(rmw_subscriptions.subscribers, rmw_subscriptions.subscriber_count),
+  //   SET_RESIZE_RMW_REALLOC(subscription, rmw_subscriptions.subscribers, rmw_subscriptions.subscriber_count)
+  // );
 
   // Expanded macro and added allocation for new data (event_hooks)
   {
@@ -523,33 +540,45 @@ rcl_wait_set_resize(
   SET_RESIZE(guard_condition,;,;);  // NOLINT
 
   // Guard condition RMW size needs to be guard conditions + timers
-  rmw_guard_conditions_t * rmw_gcs = &(wait_set->impl->rmw_guard_conditions);
-  const size_t num_rmw_gc = guard_conditions_size + timers_size;
-  // Clear added guard conditions
-  rmw_gcs->guard_condition_count = 0u;
-  if (0u == num_rmw_gc) {
-    if (rmw_gcs->guard_conditions) {
-      wait_set->impl->allocator.deallocate(
-        (void *)rmw_gcs->guard_conditions, wait_set->impl->allocator.state);
-      rmw_gcs->guard_conditions = NULL;
+  {
+    rmw_guard_conditions_t * rmw_gcs = &(wait_set->impl->rmw_guard_conditions);
+    rcl_allocator_t allocator = wait_set->impl->allocator;
+    const size_t num_rmw_gc = guard_conditions_size + timers_size;
+    // Clear added guard conditions
+    rmw_gcs->guard_condition_count = 0u;
+    if (0u == num_rmw_gc) {
+      if (rmw_gcs->guard_conditions) {
+        allocator.deallocate((void *)rmw_gcs->guard_conditions, allocator.state);
+        rmw_gcs->guard_conditions = NULL;
+      }
+      // Added
+      if (rmw_gcs->event_hooks) {
+        allocator.deallocate((void *)rmw_gcs->event_hooks, allocator.state);
+        rmw_gcs->event_hooks = NULL;
+      }
+    } else {
+      rmw_gcs->guard_conditions = (void **)allocator.reallocate(
+        rmw_gcs->guard_conditions, sizeof(void *) * num_rmw_gc, allocator.state);
+      if (!rmw_gcs->guard_conditions) {
+        // Deallocate rcl arrays to match unallocated rmw guard conditions
+        allocator.deallocate(
+          (void *)wait_set->guard_conditions, allocator.state);
+        wait_set->size_of_guard_conditions = 0u;
+        wait_set->guard_conditions = NULL;
+        allocator.deallocate(
+          (void *)wait_set->timers, allocator.state);
+        wait_set->size_of_timers = 0u;
+        wait_set->timers = NULL;
+        RCL_SET_ERROR_MSG("allocating memory failed");
+        return RCL_RET_BAD_ALLOC;
+      }
+      memset(rmw_gcs->guard_conditions, 0, sizeof(void *) * num_rmw_gc);
+
+      // Added
+      rmw_gcs->event_hooks = (void **)allocator.reallocate(
+        rmw_gcs->event_hooks, sizeof(EventHook) * num_rmw_gc, allocator.state);
+      memset(rmw_gcs->event_hooks, 0, sizeof(EventHook) * num_rmw_gc);
     }
-  } else {
-    rmw_gcs->guard_conditions = (void **)wait_set->impl->allocator.reallocate(
-      rmw_gcs->guard_conditions, sizeof(void *) * num_rmw_gc, wait_set->impl->allocator.state);
-    if (!rmw_gcs->guard_conditions) {
-      // Deallocate rcl arrays to match unallocated rmw guard conditions
-      wait_set->impl->allocator.deallocate(
-        (void *)wait_set->guard_conditions, wait_set->impl->allocator.state);
-      wait_set->size_of_guard_conditions = 0u;
-      wait_set->guard_conditions = NULL;
-      wait_set->impl->allocator.deallocate(
-        (void *)wait_set->timers, wait_set->impl->allocator.state);
-      wait_set->size_of_timers = 0u;
-      wait_set->timers = NULL;
-      RCL_SET_ERROR_MSG("allocating memory failed");
-      return RCL_RET_BAD_ALLOC;
-    }
-    memset(rmw_gcs->guard_conditions, 0, sizeof(void *) * num_rmw_gc);
   }
 
   SET_RESIZE(timer,;,;);  // NOLINT
@@ -702,12 +731,25 @@ rcl_ret_t
 rcl_wait_set_add_guard_condition(
   rcl_wait_set_t * wait_set,
   const rcl_guard_condition_t * guard_condition,
+  void * event_hook,
   size_t * index)
 {
+
   SET_ADD(guard_condition)
-  SET_ADD_RMW(
-    guard_condition, rmw_guard_conditions.guard_conditions,
-    rmw_guard_conditions.guard_condition_count)
+
+  // Expand SET_ADD_RMW(
+  //   guard_condition, rmw_guard_conditions.guard_conditions,
+  //   rmw_guard_conditions.guard_condition_count)
+
+  rmw_guard_condition_t * rmw_handle = rcl_guard_condition_get_rmw_handle(guard_condition);
+  RCL_CHECK_FOR_NULL_WITH_MSG (rmw_handle, rcl_get_error_string().str, return RCL_RET_ERROR);
+  wait_set->impl->rmw_guard_conditions.guard_conditions[current_index] = rmw_handle->data;
+
+  wait_set->impl->rmw_guard_conditions.event_hooks[current_index] = event_hook;
+
+  EventHook * ev_hook = wait_set->impl->rmw_guard_conditions.event_hooks[current_index];
+
+  wait_set->impl->rmw_guard_conditions.guard_condition_count++;
 
   return RCL_RET_OK;
 }
@@ -915,14 +957,14 @@ rcl_wait(rcl_wait_set_t * wait_set, int64_t timeout)
   // }
 
   // Set corresponding rcl guard_condition handles NULL.
-  for (i = 0; i < wait_set->size_of_guard_conditions; ++i) {
-    bool is_ready = wait_set->impl->rmw_guard_conditions.guard_conditions[i] != NULL;
-    RCUTILS_LOG_DEBUG_EXPRESSION_NAMED(
-      is_ready, ROS_PACKAGE_NAME, "Guard condition in wait set is ready");
-    if (!is_ready) {
-      wait_set->guard_conditions[i] = NULL;
-    }
-  }
+  // for (i = 0; i < wait_set->size_of_guard_conditions; ++i) {
+  //   bool is_ready = wait_set->impl->rmw_guard_conditions.guard_conditions[i] != NULL;
+  //   RCUTILS_LOG_DEBUG_EXPRESSION_NAMED(
+  //     is_ready, ROS_PACKAGE_NAME, "Guard condition in wait set is ready");
+  //   if (!is_ready) {
+  //     wait_set->guard_conditions[i] = NULL;
+  //   }
+  // }
 
   // Set corresponding rcl client handles NULL.
   // for (i = 0; i < wait_set->size_of_clients; ++i) {

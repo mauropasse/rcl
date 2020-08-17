@@ -327,6 +327,7 @@ rcl_ret_t
 rcl_wait_set_add_guard_condition(
   rcl_wait_set_t * wait_set,
   const rcl_guard_condition_t * guard_condition,
+  void * ros2_handle,
   size_t * index);
 
 /// Store a pointer to the timer in the next empty spot in the set.
