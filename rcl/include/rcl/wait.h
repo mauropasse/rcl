@@ -509,6 +509,20 @@ RCL_PUBLIC
 bool
 rcl_wait_set_is_valid(const rcl_wait_set_t * wait_set);
 
+///  Set event hook to subscription
+/**
+ * Add documentation
+ */
+RCL_PUBLIC
+RCL_WARN_UNUSED
+rcl_ret_t
+rcl_set_subscription_hook(
+  void * executor_context,
+  Event_callback callback,
+  void * subscription_handle,
+  const rcl_subscription_t * subscription);
+
+
 #ifdef __cplusplus
 }
 #endif
