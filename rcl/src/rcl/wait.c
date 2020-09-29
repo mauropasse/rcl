@@ -367,6 +367,18 @@ rcl_set_service_callback(
   return rmw_set_service_callback(executor_context, callback, service_handle, rmw_service);
 }
 
+rcl_ret_t
+rcl_set_client_callback(
+  void * executor_context,
+  Event_callback callback,
+  void * client_handle,
+  const rcl_client_t * client)
+{
+  rmw_client_t * rmw_handle = rcl_client_get_rmw_handle(client);
+  void * rmw_client = rmw_handle->data;
+  return rmw_set_client_callback(executor_context, callback, client_handle, rmw_client);
+}
+
 /* Implementation-specific notes:
  *
  * Sets all of the entries in the underlying rmw array to null, and sets the

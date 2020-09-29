@@ -535,6 +535,19 @@ rcl_set_service_callback(
   void * service_handle,
   const rcl_service_t * service);
 
+///  Set event hook to client
+/**
+ * Add documentation
+ */
+RCL_PUBLIC
+RCL_WARN_UNUSED
+rcl_ret_t
+rcl_set_client_callback(
+  void * executor_context,
+  Event_callback callback,
+  void * client_handle,
+  const rcl_client_t * client);
+
 
 #ifdef __cplusplus
 }
