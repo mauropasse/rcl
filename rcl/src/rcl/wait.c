@@ -355,6 +355,18 @@ rcl_set_subscription_callback(
   return rmw_set_subscription_callback(executor_context, callback, subscription_handle, rmw_subscription);
 }
 
+rcl_ret_t
+rcl_set_service_callback(
+  void * executor_context,
+  Event_callback callback,
+  void * service_handle,
+  const rcl_service_t * service)
+{
+  rmw_service_t * rmw_handle = rcl_service_get_rmw_handle(service);
+  void * rmw_service = rmw_handle->data;
+  return rmw_set_service_callback(executor_context, callback, service_handle, rmw_service);
+}
+
 /* Implementation-specific notes:
  *
  * Sets all of the entries in the underlying rmw array to null, and sets the

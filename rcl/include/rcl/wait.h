@@ -522,6 +522,19 @@ rcl_set_subscription_callback(
   void * subscription_handle,
   const rcl_subscription_t * subscription);
 
+///  Set event hook to service
+/**
+ * Add documentation
+ */
+RCL_PUBLIC
+RCL_WARN_UNUSED
+rcl_ret_t
+rcl_set_service_callback(
+  void * executor_context,
+  Event_callback callback,
+  void * service_handle,
+  const rcl_service_t * service);
+
 
 #ifdef __cplusplus
 }
