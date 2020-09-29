@@ -516,7 +516,7 @@ rcl_wait_set_is_valid(const rcl_wait_set_t * wait_set);
 RCL_PUBLIC
 RCL_WARN_UNUSED
 rcl_ret_t
-rcl_set_subscription_hook(
+rcl_set_subscription_callback(
   void * executor_context,
   Event_callback callback,
   void * subscription_handle,

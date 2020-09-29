@@ -344,7 +344,7 @@ rcl_wait_set_add_subscription(
 }
 
 rcl_ret_t
-rcl_set_subscription_hook(
+rcl_set_subscription_callback(
   void * executor_context,
   Event_callback callback,
   void * subscription_handle,
@@ -352,7 +352,7 @@ rcl_set_subscription_hook(
 {
   rmw_subscription_t * rmw_handle = rcl_subscription_get_rmw_handle(subscription);
   void * rmw_subscription = rmw_handle->data;
-  return rmw_set_subscription_hook(executor_context, callback, subscription_handle, rmw_subscription);
+  return rmw_set_subscription_callback(executor_context, callback, subscription_handle, rmw_subscription);
 }
 
 /* Implementation-specific notes:
