@@ -696,11 +696,12 @@ rcl_set_subscription_callback(
 {
   rmw_subscription_t * rmw_handle = rcl_subscription_get_rmw_handle(subscription);
   void * rmw_subscription = rmw_handle->data;
+
   return rmw_set_subscription_callback(
-    executor_context,
-    executor_callback,
-    subscription_handle,
-    rmw_subscription);
+            executor_context,
+            executor_callback,
+            subscription_handle,
+            rmw_subscription);
 }
 
 rcl_ret_t
@@ -712,11 +713,12 @@ rcl_set_service_callback(
 {
   rmw_service_t * rmw_handle = rcl_service_get_rmw_handle(service);
   void * rmw_service = rmw_handle->data;
+
   return rmw_set_service_callback(
-    executor_context,
-    executor_callback,
-    service_handle,
-    rmw_service);
+            executor_context,
+            executor_callback,
+            service_handle,
+            rmw_service);
 }
 
 rcl_ret_t
@@ -728,11 +730,29 @@ rcl_set_client_callback(
 {
   rmw_client_t * rmw_handle = rcl_client_get_rmw_handle(client);
   void * rmw_client = rmw_handle->data;
+
   return rmw_set_client_callback(
-    executor_context,
-    executor_callback,
-    client_handle,
-    rmw_client);
+            executor_context,
+            executor_callback,
+            client_handle,
+            rmw_client);
+}
+
+rcl_ret_t
+rcl_set_guard_condition_callback(
+  void * executor_context,
+  Event_callback executor_callback,
+  void * waitable_handle,
+  const rcl_guard_condition_t * guard_condition)
+{
+  rmw_guard_condition_t * rmw_handle = rcl_guard_condition_get_rmw_handle(guard_condition);
+  void * rmw_guard_condition = rmw_handle->data;
+
+  return rmw_set_guard_condition_callback(
+            executor_context,
+            executor_callback,
+            waitable_handle,
+            rmw_guard_condition);
 }
 
 #ifdef __cplusplus
