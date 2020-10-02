@@ -532,6 +532,19 @@ rcl_set_client_callback(
   void * client_handle,
   const rcl_client_t * client);
 
+///  Set guard_condition callback
+/**
+ * Add documentation
+ */
+RCL_PUBLIC
+RCL_WARN_UNUSED
+rcl_ret_t
+rcl_set_guard_condition_callback(
+  void * executor_context,
+  Event_callback executor_callback,
+  void * guard_condition_handle,
+  const rcl_guard_condition_t * guard_condition);
+
 #ifdef __cplusplus
 }
 #endif
