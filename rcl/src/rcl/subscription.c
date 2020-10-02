@@ -497,6 +497,20 @@ rcl_subscription_can_loan_messages(const rcl_subscription_t * subscription)
   return subscription->impl->rmw_handle->can_loan_messages;
 }
 
+rcl_ret_t
+rcl_subscription_set_callback(
+  const void * executor_context,
+  Event_callback executor_callback,
+  const void * subscription_handle,
+  const rcl_subscription_t * subscription)
+{
+  return rmw_set_subscription_callback(
+            executor_context,
+            executor_callback,
+            subscription_handle,
+            subscription->impl->rmw_handle->data);
+}
+
 #ifdef __cplusplus
 }
 #endif
