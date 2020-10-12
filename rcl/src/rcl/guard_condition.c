@@ -189,7 +189,7 @@ rcl_guard_condition_get_rmw_handle(const rcl_guard_condition_t * guard_condition
 rcl_ret_t
 rcl_guard_condition_set_events_executor_callback(
   const void * executor_context,
-  Event_callback executor_callback,
+  ExecutorEventCallback executor_callback,
   const void * guard_condition_handle,
   const rcl_guard_condition_t * guard_condition,
   bool use_previous_events)

@@ -284,7 +284,7 @@ rcl_client_is_valid(const rcl_client_t * client)
 rcl_ret_t
 rcl_client_set_events_executor_callback(
   const void * executor_context,
-  Event_callback executor_callback,
+  ExecutorEventCallback executor_callback,
   const void * client_handle,
   const rcl_client_t * client)
 {

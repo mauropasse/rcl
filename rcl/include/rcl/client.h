@@ -25,7 +25,7 @@ extern "C"
 #include "rcl/macros.h"
 #include "rcl/node.h"
 #include "rcl/visibility_control.h"
-#include "rcutils/event_types.h"
+#include "rcutils/executor_event_types.h"
 
 /// Internal rcl client implementation struct.
 struct rcl_client_impl_t;
@@ -413,7 +413,7 @@ RCL_WARN_UNUSED
 rcl_ret_t
 rcl_client_set_events_executor_callback(
   const void * executor_context,
-  Event_callback executor_callback,
+  ExecutorEventCallback executor_callback,
   const void * client_handle,
   const rcl_client_t * client);
 
