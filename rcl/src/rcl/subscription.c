@@ -500,7 +500,7 @@ rcl_subscription_can_loan_messages(const rcl_subscription_t * subscription)
 rcl_ret_t
 rcl_subscription_set_events_executor_callback(
   const void * executor_context,
-  Event_callback executor_callback,
+  ExecutorEventCallback executor_callback,
   const void * subscription_handle,
   const rcl_subscription_t * subscription)
 {
