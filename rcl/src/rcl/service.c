@@ -371,13 +371,13 @@ rcl_service_is_valid(const rcl_service_t * service)
 }
 
 rcl_ret_t
-rcl_service_set_callback(
+rcl_service_set_events_executor_callback(
   const void * executor_context,
   Event_callback executor_callback,
   const void * service_handle,
   const rcl_service_t * service)
 {
-  return rmw_set_service_callback(
+  return rmw_service_set_events_executor_callback(
             executor_context,
             executor_callback,
             service_handle,

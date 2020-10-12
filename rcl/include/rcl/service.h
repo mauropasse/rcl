@@ -425,7 +425,7 @@ rcl_service_is_valid(const rcl_service_t * service);
 RCL_PUBLIC
 RCL_WARN_UNUSED
 rcl_ret_t
-rcl_service_set_callback(
+rcl_service_set_events_executor_callback(
   const void * executor_context,
   Event_callback executor_callback,
   const void * service_handle,
