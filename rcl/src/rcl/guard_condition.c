@@ -194,7 +194,7 @@ rcl_guard_condition_set_events_executor_callback(
   const rcl_guard_condition_t * guard_condition,
   bool use_previous_events)
 {
-  return rmw_set_guard_condition_callback(
+  return rmw_guard_condition_set_events_executor_callback(
             executor_context,
             executor_callback,
             guard_condition_handle,
