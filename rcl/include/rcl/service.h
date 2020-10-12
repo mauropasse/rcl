@@ -25,7 +25,7 @@ extern "C"
 #include "rcl/macros.h"
 #include "rcl/node.h"
 #include "rcl/visibility_control.h"
-#include "rcutils/event_types.h"
+#include "rcutils/executor_event_types.h"
 
 /// Internal rcl implementation struct.
 struct rcl_service_impl_t;
@@ -425,9 +425,9 @@ rcl_service_is_valid(const rcl_service_t * service);
 RCL_PUBLIC
 RCL_WARN_UNUSED
 rcl_ret_t
-rcl_service_set_callback(
+rcl_service_set_events_executor_callback(
   const void * executor_context,
-  Event_callback executor_callback,
+  ExecutorEventCallback executor_callback,
   const void * service_handle,
   const rcl_service_t * service);
 

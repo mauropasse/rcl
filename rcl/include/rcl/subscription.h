@@ -25,7 +25,7 @@ extern "C"
 #include "rcl/macros.h"
 #include "rcl/node.h"
 #include "rcl/visibility_control.h"
-#include "rcutils/event_types.h"
+#include "rcutils/executor_event_types.h"
 
 #include "rmw/message_sequence.h"
 
@@ -608,9 +608,9 @@ rcl_subscription_can_loan_messages(const rcl_subscription_t * subscription);
 RCL_PUBLIC
 RCL_WARN_UNUSED
 rcl_ret_t
-rcl_subscription_set_callback(
+rcl_subscription_set_events_executor_callback(
   const void * executor_context,
-  Event_callback executor_callback,
+  ExecutorEventCallback executor_callback,
   const void * subscription_handle,
   const rcl_subscription_t * subscription);
 
