@@ -370,6 +370,21 @@ rcl_service_is_valid(const rcl_service_t * service)
   return true;
 }
 
+rcl_ret_t
+rcl_service_set_callback(
+  const void * executor_context,
+  Event_callback executor_callback,
+  const void * service_handle,
+  const rcl_service_t * service)
+{
+  return rmw_set_service_callback(
+            executor_context,
+            executor_callback,
+            service_handle,
+            service->impl->rmw_handle->data);
+}
+
+
 #ifdef __cplusplus
 }
 #endif

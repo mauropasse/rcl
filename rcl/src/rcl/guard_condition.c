@@ -186,6 +186,22 @@ rcl_guard_condition_get_rmw_handle(const rcl_guard_condition_t * guard_condition
   return guard_condition->impl->rmw_handle;
 }
 
+rcl_ret_t
+rcl_guard_condition_set_callback(
+  const void * executor_context,
+  Event_callback executor_callback,
+  const void * guard_condition_handle,
+  const rcl_guard_condition_t * guard_condition,
+  bool use_previous_events)
+{
+  return rmw_set_guard_condition_callback(
+            executor_context,
+            executor_callback,
+            guard_condition_handle,
+            guard_condition->impl->rmw_handle->data,
+            use_previous_events);
+}
+
 #ifdef __cplusplus
 }
 #endif

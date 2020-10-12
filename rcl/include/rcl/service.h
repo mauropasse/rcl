@@ -25,6 +25,7 @@ extern "C"
 #include "rcl/macros.h"
 #include "rcl/node.h"
 #include "rcl/visibility_control.h"
+#include "rcutils/event_types.h"
 
 /// Internal rcl implementation struct.
 struct rcl_service_impl_t;
@@ -420,6 +421,15 @@ rcl_service_get_rmw_handle(const rcl_service_t * service);
 RCL_PUBLIC
 bool
 rcl_service_is_valid(const rcl_service_t * service);
+
+RCL_PUBLIC
+RCL_WARN_UNUSED
+rcl_ret_t
+rcl_service_set_callback(
+  const void * executor_context,
+  Event_callback executor_callback,
+  const void * service_handle,
+  const rcl_service_t * service);
 
 #ifdef __cplusplus
 }

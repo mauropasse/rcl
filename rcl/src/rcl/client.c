@@ -349,6 +349,21 @@ rcl_client_is_valid(const rcl_client_t * client)
     client->impl->rmw_handle, "client's rmw handle is invalid", return false);
   return true;
 }
+
+rcl_ret_t
+rcl_client_set_callback(
+  const void * executor_context,
+  Event_callback executor_callback,
+  const void * client_handle,
+  const rcl_client_t * client)
+{
+  return rmw_set_client_callback(
+            executor_context,
+            executor_callback,
+            client_handle,
+            client->impl->rmw_handle->data);
+}
+
 #ifdef __cplusplus
 }
 #endif
