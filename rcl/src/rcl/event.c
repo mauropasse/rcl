@@ -218,6 +218,22 @@ rcl_event_is_valid(const rcl_event_t * event)
   return true;
 }
 
+rcl_ret_t
+rcl_event_set_events_executor_callback(
+  const void * executor_context,
+  ExecutorEventCallback executor_callback,
+  const void * event_handle,
+  const rcl_event_t * event,
+  bool use_previous_events)
+{
+  return rmw_event_set_events_executor_callback(
+            executor_context,
+            executor_callback,
+            event_handle,
+            &event->impl->rmw_handle,
+            use_previous_events);
+}
+
 #ifdef __cplusplus
 }
 #endif
