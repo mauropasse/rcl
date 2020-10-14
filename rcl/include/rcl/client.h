@@ -409,8 +409,7 @@ bool
 rcl_client_is_valid(const rcl_client_t * client);
 
 RCL_PUBLIC
-RCL_WARN_UNUSED
-rcl_ret_t
+void
 rcl_client_set_events_executor_callback(
   const void * executor_context,
   ExecutorEventCallback executor_callback,

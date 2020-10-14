@@ -301,14 +301,14 @@ rcl_service_is_valid(const rcl_service_t * service)
   return true;
 }
 
-rcl_ret_t
+void
 rcl_service_set_events_executor_callback(
   const void * executor_context,
   ExecutorEventCallback executor_callback,
   const void * service_handle,
   const rcl_service_t * service)
 {
-  return rmw_service_set_events_executor_callback(
+  rmw_service_set_events_executor_callback(
             executor_context,
             executor_callback,
             service_handle,

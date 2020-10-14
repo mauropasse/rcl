@@ -186,7 +186,7 @@ rcl_guard_condition_get_rmw_handle(const rcl_guard_condition_t * guard_condition
   return guard_condition->impl->rmw_handle;
 }
 
-rcl_ret_t
+void
 rcl_guard_condition_set_events_executor_callback(
   const void * executor_context,
   ExecutorEventCallback executor_callback,
@@ -194,7 +194,7 @@ rcl_guard_condition_set_events_executor_callback(
   const rcl_guard_condition_t * guard_condition,
   bool use_previous_events)
 {
-  return rmw_guard_condition_set_events_executor_callback(
+  rmw_guard_condition_set_events_executor_callback(
             executor_context,
             executor_callback,
             guard_condition_handle,

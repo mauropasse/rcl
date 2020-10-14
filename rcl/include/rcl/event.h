@@ -194,8 +194,7 @@ bool
 rcl_event_is_valid(const rcl_event_t * event);
 
 RCL_PUBLIC
-RCL_WARN_UNUSED
-rcl_ret_t
+void
 rcl_event_set_events_executor_callback(
   const void * executor_context,
   ExecutorEventCallback executor_callback,
