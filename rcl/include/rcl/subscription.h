@@ -606,7 +606,8 @@ bool
 rcl_subscription_can_loan_messages(const rcl_subscription_t * subscription);
 
 RCL_PUBLIC
-void
+RCL_WARN_UNUSED
+rcl_ret_t
 rcl_subscription_set_events_executor_callback(
   const void * executor_context,
   ExecutorEventCallback executor_callback,
