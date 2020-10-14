@@ -260,8 +260,7 @@ rmw_guard_condition_t *
 rcl_guard_condition_get_rmw_handle(const rcl_guard_condition_t * guard_condition);
 
 RCL_PUBLIC
-RCL_WARN_UNUSED
-rcl_ret_t
+void
 rcl_guard_condition_set_events_executor_callback(
   const void * executor_context,
   ExecutorEventCallback executor_callback,
