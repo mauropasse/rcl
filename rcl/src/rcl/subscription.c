@@ -438,14 +438,14 @@ rcl_subscription_can_loan_messages(const rcl_subscription_t * subscription)
   return subscription->impl->rmw_handle->can_loan_messages;
 }
 
-void
+rcl_ret_t
 rcl_subscription_set_events_executor_callback(
   const void * executor_context,
   ExecutorEventCallback executor_callback,
   const void * subscription_handle,
   const rcl_subscription_t * subscription)
 {
-  rmw_subscription_set_events_executor_callback(
+  return rmw_subscription_set_events_executor_callback(
             executor_context,
             executor_callback,
             subscription_handle,
