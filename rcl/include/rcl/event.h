@@ -198,7 +198,7 @@ RCL_WARN_UNUSED
 rcl_ret_t
 rcl_event_set_events_executor_callback(
   const void * executor_context,
-  ExecutorEventCallback executor_callback,
+  EventsExecutorCallback executor_callback,
   const void * event_handle,
   const rcl_event_t * event,
   bool use_previous_events);
