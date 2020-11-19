@@ -377,7 +377,7 @@ rcl_service_set_events_executor_callback(
   const void * service_handle,
   const rcl_service_t * service)
 {
-  return rmw_service_set_events_executor_callback(
+  return rmw_service_set_listener_callback(
             executor_context,
             executor_callback,
             service_handle,

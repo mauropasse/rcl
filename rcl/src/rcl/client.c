@@ -357,7 +357,7 @@ rcl_client_set_events_executor_callback(
   const void * client_handle,
   const rcl_client_t * client)
 {
-  return rmw_client_set_events_executor_callback(
+  return rmw_client_set_listener_callback(
             executor_context,
             executor_callback,
             client_handle,

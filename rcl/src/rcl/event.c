@@ -226,7 +226,7 @@ rcl_event_set_events_executor_callback(
   const rcl_event_t * event,
   bool use_previous_events)
 {
-  return rmw_event_set_events_executor_callback(
+  return rmw_event_set_listener_callback(
             executor_context,
             executor_callback,
             event_handle,

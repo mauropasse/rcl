@@ -504,7 +504,7 @@ rcl_subscription_set_events_executor_callback(
   const void * subscription_handle,
   const rcl_subscription_t * subscription)
 {
-  return rmw_subscription_set_events_executor_callback(
+  return rmw_subscription_set_listener_callback(
             executor_context,
             executor_callback,
             subscription_handle,
