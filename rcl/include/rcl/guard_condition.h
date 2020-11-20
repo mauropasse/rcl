@@ -25,7 +25,8 @@ extern "C"
 #include "rcl/macros.h"
 #include "rcl/types.h"
 #include "rcl/visibility_control.h"
-#include "rcutils/executor_event_types.h"
+
+#include "rmw/executor_event_types.h"
 
 /// Internal rcl guard condition implementation struct.
 struct rcl_guard_condition_impl_t;
