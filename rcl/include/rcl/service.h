@@ -25,7 +25,8 @@ extern "C"
 #include "rcl/macros.h"
 #include "rcl/node.h"
 #include "rcl/visibility_control.h"
-#include "rcutils/executor_event_types.h"
+
+#include "rmw/executor_event_types.h"
 
 /// Internal rcl implementation struct.
 struct rcl_service_impl_t;

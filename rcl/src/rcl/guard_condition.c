@@ -198,7 +198,7 @@ rcl_guard_condition_set_events_executor_callback(
             executor_context,
             executor_callback,
             guard_condition_handle,
-            guard_condition->impl->rmw_handle->data,
+            guard_condition->impl->rmw_handle,
             use_previous_events);
 }
 

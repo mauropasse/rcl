@@ -508,7 +508,7 @@ rcl_subscription_set_events_executor_callback(
             executor_context,
             executor_callback,
             subscription_handle,
-            subscription->impl->rmw_handle->data);
+            subscription->impl->rmw_handle);
 }
 
 #ifdef __cplusplus

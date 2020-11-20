@@ -381,7 +381,7 @@ rcl_service_set_events_executor_callback(
             executor_context,
             executor_callback,
             service_handle,
-            service->impl->rmw_handle->data);
+            service->impl->rmw_handle);
 }
 
 
