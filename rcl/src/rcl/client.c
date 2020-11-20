@@ -351,15 +351,15 @@ rcl_client_is_valid(const rcl_client_t * client)
 }
 
 rcl_ret_t
-rcl_client_set_events_executor_callback(
+rcl_client_set_listener_callback(
   const void * executor_context,
-  EventsExecutorCallback executor_callback,
+  rmw_listener_cb_t listener_callback,
   const void * client_handle,
   const rcl_client_t * client)
 {
   return rmw_client_set_listener_callback(
             executor_context,
-            executor_callback,
+            listener_callback,
             client_handle,
             client->impl->rmw_handle);
 }
