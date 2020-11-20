@@ -197,7 +197,7 @@ RCL_PUBLIC
 RCL_WARN_UNUSED
 rcl_ret_t
 rcl_event_set_listener_callback(
-  const void * executor_context,
+  const void * callback_context,
   rmw_listener_cb_t listener_callback,
   const void * event_handle,
   const rcl_event_t * event,

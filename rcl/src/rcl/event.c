@@ -220,14 +220,14 @@ rcl_event_is_valid(const rcl_event_t * event)
 
 rcl_ret_t
 rcl_event_set_listener_callback(
-  const void * executor_context,
+  const void * callback_context,
   rmw_listener_cb_t listener_callback,
   const void * event_handle,
   const rcl_event_t * event,
   bool use_previous_events)
 {
   return rmw_event_set_listener_callback(
-            executor_context,
+            callback_context,
             listener_callback,
             event_handle,
             &event->impl->rmw_handle,
