@@ -361,7 +361,7 @@ rcl_client_set_events_executor_callback(
             executor_context,
             executor_callback,
             client_handle,
-            client->impl->rmw_handle->data);
+            client->impl->rmw_handle);
 }
 
 #ifdef __cplusplus
