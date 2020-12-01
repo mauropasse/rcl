@@ -264,7 +264,7 @@ RCL_PUBLIC
 RCL_WARN_UNUSED
 rcl_ret_t
 rcl_guard_condition_set_listener_callback(
-  const void * callback_context,
+  const void * user_data,
   rmw_listener_cb_t listener_callback,
   const void * guard_condition_handle,
   const rcl_guard_condition_t * guard_condition,

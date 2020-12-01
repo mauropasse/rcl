@@ -352,13 +352,13 @@ rcl_client_is_valid(const rcl_client_t * client)
 
 rcl_ret_t
 rcl_client_set_listener_callback(
-  const void * callback_context,
+  const void * user_data,
   rmw_listener_cb_t listener_callback,
   const void * client_handle,
   const rcl_client_t * client)
 {
   return rmw_client_set_listener_callback(
-            callback_context,
+            user_data,
             listener_callback,
             client_handle,
             client->impl->rmw_handle);
