@@ -188,14 +188,14 @@ rcl_guard_condition_get_rmw_handle(const rcl_guard_condition_t * guard_condition
 
 rcl_ret_t
 rcl_guard_condition_set_listener_callback(
-  const void * callback_context,
+  const void * user_data,
   rmw_listener_cb_t listener_callback,
   const void * guard_condition_handle,
   const rcl_guard_condition_t * guard_condition,
   bool use_previous_events)
 {
   return rmw_guard_condition_set_listener_callback(
-            callback_context,
+            user_data,
             listener_callback,
             guard_condition_handle,
             guard_condition->impl->rmw_handle,
