@@ -303,16 +303,16 @@ rcl_service_is_valid(const rcl_service_t * service)
 
 rcl_ret_t
 rcl_service_set_listener_callback(
-  const void * user_data,
+  const rcl_service_t * service,
   rmw_listener_cb_t listener_callback,
-  const void * service_handle,
-  const rcl_service_t * service)
+  const void * user_data,
+  const void * service_handle)
 {
   return rmw_service_set_listener_callback(
-            user_data,
+            service->impl->rmw_handle,
             listener_callback,
-            service_handle,
-            service->impl->rmw_handle);
+            user_data,
+            service_handle);
 }
 
 

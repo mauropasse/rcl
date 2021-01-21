@@ -439,16 +439,16 @@ rcl_subscription_can_loan_messages(const rcl_subscription_t * subscription)
 
 rcl_ret_t
 rcl_subscription_set_listener_callback(
-  const void * user_data,
+  const rcl_subscription_t * subscription,
   rmw_listener_cb_t listener_callback,
-  const void * subscription_handle,
-  const rcl_subscription_t * subscription)
+  const void * user_data,
+  const void * subscription_handle)
 {
   return rmw_subscription_set_listener_callback(
-            user_data,
+            subscription->impl->rmw_handle,
             listener_callback,
-            subscription_handle,
-            subscription->impl->rmw_handle);
+            user_data,
+            subscription_handle);
 }
 
 #ifdef __cplusplus
