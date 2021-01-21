@@ -29,6 +29,7 @@ extern "C"
 #include "rcutils/logging_macros.h"
 #include "rcutils/macros.h"
 #include "rcutils/strdup.h"
+#include "tracetools/tracetools.h"
 
 #include "rcl_lifecycle/default_state_machine.h"
 #include "rcl_lifecycle/transition_map.h"
@@ -49,7 +50,7 @@ rcl_lifecycle_get_zero_initialized_state()
 rcl_ret_t
 rcl_lifecycle_state_init(
   rcl_lifecycle_state_t * state,
-  unsigned int id,
+  uint8_t id,
   const char * label,
   const rcl_allocator_t * allocator)
 {
@@ -215,10 +216,18 @@ rcl_lifecycle_state_machine_init(
       // init default state machine might have allocated memory,
       // so we have to call fini
       ret = rcl_lifecycle_state_machine_fini(state_machine, node_handle, allocator);
+      if (ret != RCL_RET_OK) {
+        RCUTILS_SAFE_FWRITE_TO_STDERR(
+          "Freeing state machine failed while handling a previous error. Leaking memory!\n");
+      }
       return RCL_RET_ERROR;
     }
   }
 
+  TRACEPOINT(
+    rcl_lifecycle_state_machine_init,
+    (const void *)node_handle,
+    (const void *)state_machine);
   return RCL_RET_OK;
 }
 
@@ -339,6 +348,11 @@ _trigger_transition(
     }
   }
 
+  TRACEPOINT(
+    rcl_lifecycle_transition,
+    (const void *)state_machine,
+    transition->start->label,
+    state_machine->current_state->label);
   return RCL_RET_OK;
 }
 
