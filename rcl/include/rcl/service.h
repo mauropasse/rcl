@@ -427,10 +427,10 @@ RCL_PUBLIC
 RCL_WARN_UNUSED
 rcl_ret_t
 rcl_service_set_listener_callback(
-  const void * user_data,
+  const rcl_service_t * service,
   rmw_listener_cb_t listener_callback,
-  const void * service_handle,
-  const rcl_service_t * service);
+  const void * user_data,
+  const void * service_handle);
 
 #ifdef __cplusplus
 }
