@@ -26,6 +26,8 @@ extern "C"
 #include "rcl/types.h"
 #include "rcl/visibility_control.h"
 
+#include "rmw/listener_event_types.h"
+
 /// Internal rcl guard condition implementation struct.
 struct rcl_guard_condition_impl_t;
 
@@ -257,6 +259,16 @@ RCL_PUBLIC
 RCL_WARN_UNUSED
 rmw_guard_condition_t *
 rcl_guard_condition_get_rmw_handle(const rcl_guard_condition_t * guard_condition);
+
+RCL_PUBLIC
+RCL_WARN_UNUSED
+rcl_ret_t
+rcl_guard_condition_set_listener_callback(
+  const rcl_guard_condition_t * guard_condition,
+  rmw_listener_cb_t listener_callback,
+  const void * user_data,
+  const void * guard_condition_handle,
+  bool use_previous_events);
 
 #ifdef __cplusplus
 }
