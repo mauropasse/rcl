@@ -610,7 +610,7 @@ RCL_WARN_UNUSED
 rcl_ret_t
 rcl_subscription_set_listener_callback(
   const rcl_subscription_t * subscription,
-  rmw_listener_cb_t listener_callback,
+  rmw_listener_callback_t listener_callback,
   const void * user_data,
   const void * subscription_handle);
 
