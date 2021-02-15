@@ -611,7 +611,7 @@ rcl_ret_t
 rcl_subscription_set_listener_callback(
   const rcl_subscription_t * subscription,
   rmw_listener_callback_t listener_callback,
-  const void * user_data,
+  void * user_data,
   const void * subscription_handle);
 
 #ifdef __cplusplus

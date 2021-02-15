@@ -285,7 +285,7 @@ rcl_ret_t
 rcl_client_set_listener_callback(
   const rcl_client_t * client,
   rmw_listener_callback_t listener_callback,
-  const void * user_data,
+  void * user_data,
   const void * client_handle)
 {
   return rmw_client_set_listener_callback(
