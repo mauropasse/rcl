@@ -190,7 +190,7 @@ rcl_ret_t
 rcl_guard_condition_set_listener_callback(
   const rcl_guard_condition_t * guard_condition,
   rmw_listener_callback_t listener_callback,
-  const void * user_data,
+  void * user_data,
   const void * guard_condition_handle,
   bool use_previous_events)
 {
