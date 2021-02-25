@@ -1054,6 +1054,64 @@ rcl_action_server_wait_set_get_entities_ready(
   return RCL_RET_OK;
 }
 
+void rcl_action_server_get_events_id(
+  const rcl_action_server_t * action_server,
+  const void * events_id[])
+{
+  events_id[GOAL_SERVICE] = &action_server->impl->goal_service;
+  events_id[RESULT_SERVICE] = &action_server->impl->result_service;
+  events_id[CANCEL_SERVICE] = &action_server->impl->cancel_service;
+}
+
+rcl_ret_t
+rcl_action_server_set_listeners_callback(
+  const rcl_action_server_t * action_server,
+  rmw_listener_callback_t listener_callback,
+  const void * user_data[])
+{
+  if (!rcl_action_server_is_valid_except_context(action_server)) {
+    return RCL_RET_ACTION_SERVER_INVALID;
+  }
+
+  const void * goal_service_data = NULL;
+  const void * cancel_service_data = NULL;
+  const void * result_service_data = NULL;
+
+  if (user_data) {
+    goal_service_data = user_data[GOAL_SERVICE];
+    cancel_service_data = user_data[CANCEL_SERVICE];
+    result_service_data = user_data[RESULT_SERVICE];
+  }
+
+  rcl_ret_t ret;
+
+  ret = rcl_service_set_listener_callback(
+    &action_server->impl->goal_service,
+    listener_callback,
+    goal_service_data);
+  if (ret != RCL_RET_OK) {
+    return ret;
+  }
+
+  ret = rcl_service_set_listener_callback(
+    &action_server->impl->cancel_service,
+    listener_callback,
+    cancel_service_data);
+  if (ret != RCL_RET_OK) {
+    return ret;
+  }
+
+  ret = rcl_service_set_listener_callback(
+    &action_server->impl->result_service,
+    listener_callback,
+    result_service_data);
+  if (ret != RCL_RET_OK) {
+    return ret;
+  }
+
+  return RCL_RET_OK;
+}
+
 #ifdef __cplusplus
 }
 #endif

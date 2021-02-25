@@ -647,6 +647,86 @@ rcl_action_client_wait_set_get_entities_ready(
   return RCL_RET_OK;
 }
 
+void rcl_action_client_get_events_id(
+  const rcl_action_client_t * action_client,
+  const void * events_id[])
+{
+  events_id[GOAL_CLIENT] = &action_client->impl->goal_client;
+  events_id[RESULT_CLIENT] = &action_client->impl->result_client;
+  events_id[CANCEL_CLIENT] = &action_client->impl->cancel_client;
+  events_id[FEEDBACK_SUBSCRIPTION] = &action_client->impl->feedback_subscription;
+  events_id[STATUS_SUBSCRIPTION] = &action_client->impl->status_subscription;
+}
+
+rcl_ret_t
+rcl_action_client_set_listeners_callback(
+  const rcl_action_client_t * action_client,
+  rmw_listener_callback_t listener_callback,
+  const void * user_data[])
+{
+  if (!rcl_action_client_is_valid(action_client)) {
+    return RCL_RET_ACTION_CLIENT_INVALID;
+  }
+
+  const void * goal_client_data = NULL;
+  const void * cancel_client_data = NULL;
+  const void * result_client_data = NULL;
+  const void * feedback_subscription_data = NULL;
+  const void * status_subscription_data = NULL;
+
+  if (user_data) {
+    goal_client_data = user_data[GOAL_CLIENT];
+    cancel_client_data = user_data[CANCEL_CLIENT];
+    result_client_data = user_data[RESULT_CLIENT];
+    feedback_subscription_data = user_data[FEEDBACK_SUBSCRIPTION];
+    status_subscription_data = user_data[STATUS_SUBSCRIPTION];
+  }
+
+  rcl_ret_t ret;
+
+  ret = rcl_client_set_listener_callback(
+    &action_client->impl->goal_client,
+    listener_callback,
+    goal_client_data);
+  if (ret != RCL_RET_OK) {
+    return ret;
+  }
+
+  ret = rcl_client_set_listener_callback(
+    &action_client->impl->cancel_client,
+    listener_callback,
+    cancel_client_data);
+  if (ret != RCL_RET_OK) {
+    return ret;
+  }
+
+  ret = rcl_client_set_listener_callback(
+    &action_client->impl->result_client,
+    listener_callback,
+    result_client_data);
+  if (ret != RCL_RET_OK) {
+    return ret;
+  }
+
+  ret = rcl_subscription_set_listener_callback(
+    &action_client->impl->feedback_subscription,
+    listener_callback,
+    feedback_subscription_data);
+  if (ret != RCL_RET_OK) {
+    return ret;
+  }
+
+  ret = rcl_subscription_set_listener_callback(
+    &action_client->impl->status_subscription,
+    listener_callback,
+    status_subscription_data);
+  if (ret != RCL_RET_OK) {
+    return ret;
+  }
+
+  return RCL_RET_OK;
+}
+
 #ifdef __cplusplus
 }
 #endif

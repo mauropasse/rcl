@@ -27,6 +27,8 @@ extern "C"
 #include "rcl/node.h"
 #include "rcl/time.h"
 
+#include "rmw/listener_event_types.h"
+
 #include "rosidl_runtime_c/action_type_support_struct.h"
 
 /// Internal rcl_action implementation struct.
@@ -929,6 +931,37 @@ RCL_ACTION_PUBLIC
 RCL_WARN_UNUSED
 bool
 rcl_action_server_is_valid_except_context(const rcl_action_server_t * action_server);
+
+/// Get the action server events ID.
+/**
+ * This function fills the array passed as argument
+ * with the action server events ID.
+ * The IDs are pointers to the action server entities
+ * which respond to action server events.
+ * \param[in] action_server pointer to the action server
+ * \param[in] events_id the array to store the IDs
+ */
+RCL_ACTION_PUBLIC
+void
+rcl_action_server_get_events_id(
+  const rcl_action_server_t * action_server,
+  const void * events_id[]);
+
+/// Set the action server listeners callback
+/**
+ * This function set the listener callbacks to the
+ * entities conforming the action server.
+ * \param[in] action_server pointer to the action server
+ * \param[in] listener_callback the listener callback
+ * \param[in] user_data array of data used by the callbacks
+ */
+RCL_ACTION_PUBLIC
+RCL_WARN_UNUSED
+rcl_ret_t
+rcl_action_server_set_listeners_callback(
+  const rcl_action_server_t * action_server,
+  rmw_listener_callback_t listener_callback,
+  const void * user_data[]);
 
 #ifdef __cplusplus
 }

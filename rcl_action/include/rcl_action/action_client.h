@@ -25,6 +25,8 @@ extern "C"
 #include "rcl/macros.h"
 #include "rcl/node.h"
 
+#include "rmw/listener_event_types.h"
+
 
 /// Internal action client implementation struct.
 struct rcl_action_client_impl_t;
@@ -740,6 +742,37 @@ RCL_ACTION_PUBLIC
 bool
 rcl_action_client_is_valid(
   const rcl_action_client_t * action_client);
+
+/// Get the action client events ID.
+/**
+ * This function fills the array passed as argument
+ * with the action client events ID.
+ * The IDs are pointers to the action client entities
+ * which respond to action client events.
+ * \param[in] action_client pointer to the action client
+ * \param[in] events_id the array to store the IDs
+ */
+RCL_ACTION_PUBLIC
+void
+rcl_action_client_get_events_id(
+  const rcl_action_client_t * action_client,
+  const void * events_id[]);
+
+/// Set the action client listeners callback
+/**
+ * This function set the listener callbacks to the
+ * entities conforming the action client.
+ * \param[in] action_client pointer to the action client
+ * \param[in] listener_callback the listener callback
+ * \param[in] user_data array of data used by the callbacks
+ */
+RCL_ACTION_PUBLIC
+RCL_WARN_UNUSED
+rcl_ret_t
+rcl_action_client_set_listeners_callback(
+  const rcl_action_client_t * action_client,
+  rmw_listener_callback_t listener_callback,
+  const void * user_data[]);
 
 #ifdef __cplusplus
 }

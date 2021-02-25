@@ -113,6 +113,26 @@ typedef enum rcl_action_goal_event_t
   GOAL_EVENT_NUM_EVENTS
 } rcl_action_goal_event_t;
 
+/// Action client entities
+typedef enum rcl_action_client_entity_type_t
+{
+  GOAL_CLIENT = 0,
+  RESULT_CLIENT,
+  CANCEL_CLIENT,
+  FEEDBACK_SUBSCRIPTION,
+  STATUS_SUBSCRIPTION,
+  ACTION_CLIENT_NUM_ENTITIES
+} rcl_action_client_entity_type_t;
+
+/// Action server entities
+typedef enum rcl_action_server_entity_type_t
+{
+  GOAL_SERVICE = 0,
+  CANCEL_SERVICE,
+  RESULT_SERVICE,
+  ACTION_SERVER_NUM_ENTITIES
+} rcl_action_server_entity_type_t;
+
 /// Return a rcl_action_goal_info_t with members set to zero values.
 RCL_ACTION_PUBLIC
 RCL_WARN_UNUSED
