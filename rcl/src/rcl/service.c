@@ -305,14 +305,12 @@ rcl_ret_t
 rcl_service_set_listener_callback(
   const rcl_service_t * service,
   rmw_listener_callback_t listener_callback,
-  void * user_data,
-  const void * service_handle)
+  const void * user_data)
 {
   return rmw_service_set_listener_callback(
-            service->impl->rmw_handle,
-            listener_callback,
-            user_data,
-            service_handle);
+    service->impl->rmw_handle,
+    listener_callback,
+    user_data);
 }
 
 

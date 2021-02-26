@@ -285,14 +285,12 @@ rcl_ret_t
 rcl_client_set_listener_callback(
   const rcl_client_t * client,
   rmw_listener_callback_t listener_callback,
-  void * user_data,
-  const void * client_handle)
+  const void * user_data)
 {
   return rmw_client_set_listener_callback(
-            client->impl->rmw_handle,
-            listener_callback,
-            user_data,
-            client_handle);
+    client->impl->rmw_handle,
+    listener_callback,
+    user_data);
 }
 
 #ifdef __cplusplus
