@@ -199,8 +199,7 @@ rcl_ret_t
 rcl_event_set_listener_callback(
   const rcl_event_t * event,
   rmw_listener_callback_t listener_callback,
-  void * user_data,
-  const void * event_handle,
+  const void * user_data,
   bool use_previous_events);
 
 #ifdef __cplusplus

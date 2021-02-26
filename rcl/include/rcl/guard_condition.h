@@ -266,8 +266,7 @@ rcl_ret_t
 rcl_guard_condition_set_listener_callback(
   const rcl_guard_condition_t * guard_condition,
   rmw_listener_callback_t listener_callback,
-  void * user_data,
-  const void * guard_condition_handle,
+  const void * user_data,
   bool use_previous_events);
 
 #ifdef __cplusplus

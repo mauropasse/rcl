@@ -429,8 +429,7 @@ rcl_ret_t
 rcl_service_set_listener_callback(
   const rcl_service_t * service,
   rmw_listener_callback_t listener_callback,
-  void * user_data,
-  const void * service_handle);
+  const void * user_data);
 
 #ifdef __cplusplus
 }
