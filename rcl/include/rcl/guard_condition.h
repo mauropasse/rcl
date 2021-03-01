@@ -26,7 +26,7 @@ extern "C"
 #include "rcl/types.h"
 #include "rcl/visibility_control.h"
 
-#include "rmw/listener_event_types.h"
+#include "rmw/listener_callback_type.h"
 
 /// Internal rcl guard condition implementation struct.
 struct rcl_guard_condition_impl_t;

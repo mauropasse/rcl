@@ -26,7 +26,7 @@ extern "C"
 #include "rcl/node.h"
 #include "rcl/visibility_control.h"
 
-#include "rmw/listener_event_types.h"
+#include "rmw/listener_callback_type.h"
 
 /// Internal rcl implementation struct.
 struct rcl_service_impl_t;
