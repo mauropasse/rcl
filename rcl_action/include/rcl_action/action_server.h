@@ -27,7 +27,7 @@ extern "C"
 #include "rcl/node.h"
 #include "rcl/time.h"
 
-#include "rmw/listener_event_types.h"
+#include "rmw/listener_callback_type.h"
 
 #include "rosidl_runtime_c/action_type_support_struct.h"
 

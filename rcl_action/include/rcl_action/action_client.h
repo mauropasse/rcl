@@ -25,7 +25,7 @@ extern "C"
 #include "rcl/macros.h"
 #include "rcl/node.h"
 
-#include "rmw/listener_event_types.h"
+#include "rmw/listener_callback_type.h"
 
 
 /// Internal action client implementation struct.
