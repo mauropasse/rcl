@@ -9,7 +9,6 @@ find_package(rcl REQUIRED)
 find_package(rcutils REQUIRED)
 find_package(rmw REQUIRED)
 find_package(rosidl_runtime_c REQUIRED)
-find_package(tracetools REQUIRED)
 
 # Default to C11
 if(NOT CMAKE_C_STANDARD)
@@ -53,7 +52,6 @@ ament_target_dependencies(rcl_lifecycle
   "rcl"
   "rcutils"
   "rosidl_runtime_c"
-  "tracetools"
 )
 
 rcl_set_symbol_visibility_hidden(${PROJECT_NAME} LANGUAGE "C")
@@ -134,7 +132,6 @@ ament_export_dependencies(lifecycle_msgs)
 ament_export_dependencies(rcl)
 ament_export_dependencies(rcutils)
 ament_export_dependencies(rosidl_runtime_c)
-ament_export_dependencies(tracetools)
 ament_package()
 
 install(
